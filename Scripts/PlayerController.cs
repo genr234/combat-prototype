@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
+        Physics.gravity = new Vector3(0, -20f, 0);
     }
 
     private void FixedUpdate()
