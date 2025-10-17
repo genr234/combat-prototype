@@ -9,7 +9,10 @@ public class PlayerController : MonoBehaviour
     public float speed = 5f;
     public CameraController cameraController;
 
-    private void Start()
+    public int health = 100;
+    
+
+    private void Start() 
     {
         _rigidbody = GetComponent<Rigidbody>();
         Physics.gravity = new Vector3(0, -20f, 0);

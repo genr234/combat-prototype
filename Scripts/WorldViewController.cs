@@ -47,7 +47,7 @@ public class WorldViewController : MonoBehaviour
             focusedTarget.transform.position = new Vector3(focusedTarget.transform.position.x, 
                 -0.09f, focusedTarget.transform.position.z);
         }
-
+        
         focusedTarget = null;
     }
     
@@ -56,7 +56,12 @@ private void Start()
     targetPosition = GetPosition(currentLevel);
     Focus(this.levelPositions[currentLevel].levelObject);
     player.transform.position = targetPosition;
-
+    
+    InputSystem.actions.FindAction("Player/Interact").performed += ctx=>
+    {
+        SceneManager.LoadScene(levelPositions[currentLevel].sceneName);
+    };  
+    
     InputSystem.actions.FindAction("Player/Move").performed += ctx =>
     {
         var inputVector = ctx.ReadValue<Vector2>();
@@ -99,10 +104,6 @@ private void FixedUpdate()
     {
         player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, Time.fixedDeltaTime * 25f);
     }
-    InputSystem.actions.FindAction("Player/Interact").performed += ctx =>
-    {
-        print("Loading " + levelPositions[currentLevel].sceneName);
-        SceneManager.LoadScene(levelPositions[currentLevel].sceneName);
-    };
+    
 }
 }
