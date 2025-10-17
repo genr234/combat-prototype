@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour
+public class EnemySpawner : MonoBehaviour
 {
     public List<GameObject> enemies = new List<GameObject> { };
     private void Start()
