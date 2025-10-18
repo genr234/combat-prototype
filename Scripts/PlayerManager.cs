@@ -21,16 +21,14 @@ public class PlayerManager : MonoBehaviour
         print(equippedWeapon);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         healthText.text = "Health: " + health;
         weaponHolder.transform.localPosition = new Vector3(0.6f, 0.18f, -0.2f);
         weaponHolder.transform.localRotation = Quaternion.identity;
-        if (equippedWeapon)
-        {
-            equippedWeapon.transform.position = weaponHolder.transform.position;
-            equippedWeapon.transform.rotation = weaponHolder.transform.rotation;
-        }
+        if (!equippedWeapon) return;
+        equippedWeapon.transform.position = weaponHolder.transform.position;
+        equippedWeapon.transform.rotation = weaponHolder.transform.rotation;
     }
     
     public void EquipWeapon(GameObject weapon)

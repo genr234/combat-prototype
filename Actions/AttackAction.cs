@@ -9,10 +9,10 @@ using Unity.Properties;
 public partial class AttackAction : Action
 {
     [SerializeReference] public BlackboardVariable<GameObject> Target;
-
+    [SerializeReference] public BlackboardVariable<int> Damage;
     protected override Status OnStart()
     {
-        Target.Value.GetComponent<PlayerManager>().TakeDamage(1, 200);
+        Target.Value.GetComponent<PlayerManager>().TakeDamage(Damage, 200);
         return Status.Running;
     }
 

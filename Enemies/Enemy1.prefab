@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4811830651047109051}
   - component: {fileID: 8215327725866089110}
   - component: {fileID: -462317049228286243}
+  - component: {fileID: 1595632974856123084}
   m_Layer: 0
   m_Name: Enemy1
   m_TagString: Untagged
@@ -202,3 +203,18 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1595632974856123084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7397988777574611587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d72b580aea2248549d60ac227b6a53b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
+  health: 50
+  damage: 2
+  speed: 7
