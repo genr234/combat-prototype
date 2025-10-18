@@ -8,10 +8,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rigidbody;
     public float speed = 5f;
     public CameraController cameraController;
-
-    public int health = 100;
     
-
     private void Start() 
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -25,6 +22,11 @@ public class PlayerController : MonoBehaviour
         var rotation = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0);
         movement = rotation * movement;
         _rigidbody.MovePosition(_rigidbody.position + movement);
+        if (movement != Vector3.zero)
+        {
+            var targetRotation = Quaternion.LookRotation(movement);
+            _rigidbody.rotation = Quaternion.Slerp(_rigidbody.rotation, targetRotation, 0.2f);
+        }
         cameraController.zoomedOut = InputSystem.actions.FindAction("Player/Zoom Out").IsPressed();
     }
     
