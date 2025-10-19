@@ -217,4 +217,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyManager
   health: 50
   damage: 2
-  speed: 7
+  speed: 5

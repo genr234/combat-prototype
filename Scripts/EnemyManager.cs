@@ -24,7 +24,7 @@ public class EnemyManager : MonoBehaviour
         health -= inflictedDamage;
         if (health <= 0)
         {
-            Destroy(this);
+            Destroy(this.gameObject);
         }
     }
     

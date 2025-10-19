@@ -28,13 +28,13 @@ public class PlayerManager : MonoBehaviour
         weaponHolder.transform.localRotation = Quaternion.identity;
         if (!equippedWeapon) return;
         equippedWeapon.transform.position = weaponHolder.transform.position;
-        equippedWeapon.transform.rotation = weaponHolder.transform.rotation;
+        equippedWeapon.transform.rotation = weaponHolder.transform.rotation * Quaternion.Euler(0, 180, 0);
     }
     
     public void EquipWeapon(GameObject weapon)
     {
         Debug.Log("Equipped weapon: " + weapon.name);
-        equippedWeapon = Instantiate(weapon, weaponHolder.transform.position, Quaternion.identity);
+        equippedWeapon = Instantiate(weapon, weaponHolder.transform.position, weaponHolder.transform.rotation);
     }
 
     public void TakeDamage(int damage, int cooldown = 0)
