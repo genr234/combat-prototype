@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -63,6 +64,6 @@ public class PlayerManager : MonoBehaviour
     private static void Die()
     {
         Debug.Log("Player has died.");
-        // Add respawn or game over logic here
+        SceneManager.LoadScene("Scenes/WorldView");
     }
 }

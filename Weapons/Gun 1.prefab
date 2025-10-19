@@ -123,6 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786d2079e62946519f1118b0abdde5ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GunHandler
-  Cooldown: 0.5
-  Damage: 50
-  Range: 10
+  Cooldown: 0.2
+  Damage: 1
+  Range: 5
+  cursorTexture: {fileID: 2800000, guid: 4aafd1a448499492dbdcfe21c082c405, type: 3}

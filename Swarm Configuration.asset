@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dde40c2cee14b94a9bebdc92841ae51, type: 3}
+  m_Name: Swarm Configuration
+  m_EditorClassIdentifier: Assembly-CSharp::SwarmConfig
+  swarmName: Basic Swarm
+  description: A basic enemy swarm
+  enemyTypes:
+  - enemyPrefab: {fileID: 7397988777574611587, guid: abffde0a3a4264b79b43646e66b12d86, type: 3}
+    count: 5
+    spawnPriority: 0
+  formationType: 0
+  spawnRadius: 10
+  spawnDelay: 0.2
+  spawnAllAtOnce: 0
+  healthMultiplier: 1
+  speedMultiplier: 1
+  damageMultiplier: 1
+  useSpawnEffect: 1
+  swarmColor: {r: 1, g: 0, b: 0, a: 1}
+  customSpawnEffect: {fileID: 0}
+  spawnSound: {fileID: 0}

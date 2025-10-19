@@ -9,9 +9,7 @@ public class EnemyManager : MonoBehaviour
     
     private void Start()
     {
-        this.GetComponent<BehaviorGraphAgent>().BlackboardReference.SetVariableValue("Speed", speed);
-        this.GetComponent<BehaviorGraphAgent>().BlackboardReference.SetVariableValue("Damage", damage);
-        
+        ApplyStats();
     }
 
     private void FixedUpdate()
@@ -19,9 +17,27 @@ public class EnemyManager : MonoBehaviour
         
     }
     
+    public void ApplyStats()
+    {
+        var behaviorAgent = this.GetComponent<BehaviorGraphAgent>();
+        if (behaviorAgent != null && behaviorAgent.BlackboardReference != null)
+        {
+            behaviorAgent.BlackboardReference.SetVariableValue("Speed", speed);
+            behaviorAgent.BlackboardReference.SetVariableValue("Damage", damage);
+        }
+    }
+    
     public void TakeDamage(int inflictedDamage)
     {
         health -= inflictedDamage;
+        
+        // Trigger visual effects
+        var visualEffects = GetComponent<EnemyVisualEffects>();
+        if (visualEffects != null)
+        {
+            visualEffects.PlayDamageEffect();
+        }
+        
         if (health <= 0)
         {
             Destroy(this.gameObject);
