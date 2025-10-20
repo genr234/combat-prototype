@@ -16,7 +16,7 @@ MonoBehaviour:
   description: A basic enemy swarm
   enemyTypes:
   - enemyPrefab: {fileID: 7397988777574611587, guid: abffde0a3a4264b79b43646e66b12d86, type: 3}
-    count: 5
+    count: 6
     spawnPriority: 0
   formationType: 0
   spawnRadius: 10
