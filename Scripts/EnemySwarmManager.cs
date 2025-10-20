@@ -9,6 +9,7 @@ public class EnemySwarmManager : MonoBehaviour
     public List<SwarmConfig> swarmWaves = new List<SwarmConfig>();
     public bool autoStartWaves = true;
     public float timeBetweenWaves = 5f;
+    public GameObject waveTarget;
     
     [Header("Progression")]
     public bool increaseDifficultyPerWave = true;
@@ -197,6 +198,7 @@ public class EnemySwarmManager : MonoBehaviour
                 enemyManager.health = Mathf.RoundToInt(enemyManager.health * config.healthMultiplier * difficultyMultiplier);
                 enemyManager.speed *= config.speedMultiplier * Mathf.Sqrt(difficultyMultiplier);
                 enemyManager.damage = Mathf.RoundToInt(enemyManager.damage * config.damageMultiplier * difficultyMultiplier);
+                enemyManager.target = waveTarget;
             }
             else
             {

@@ -6,6 +6,7 @@ public class EnemyManager : MonoBehaviour
     public int health = 50;
     public int damage;
     public float speed = 5f;
+    public GameObject target;
     
     private void Start()
     {
@@ -24,6 +25,7 @@ public class EnemyManager : MonoBehaviour
         {
             behaviorAgent.BlackboardReference.SetVariableValue("Speed", speed);
             behaviorAgent.BlackboardReference.SetVariableValue("Damage", damage);
+            behaviorAgent.BlackboardReference.SetVariableValue("Target", target);
         }
     }
     

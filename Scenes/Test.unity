@@ -850,9 +850,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
   - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
   autoStartWaves: 1
-  timeBetweenWaves: 7
+  timeBetweenWaves: 4
+  waveTarget: {fileID: 1807558716}
   increaseDifficultyPerWave: 1
-  difficultyScalePerWave: 0.3
+  difficultyScalePerWave: 1
   spawnCenter: {fileID: 2062871976}
   spawnAroundPlayer: 0
   playerTag: Player
@@ -867,7 +868,19 @@ MonoBehaviour:
       m_Calls: []
   OnAllWavesComplete:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1500884669}
+        m_TargetAssemblyTypeName: EndHandler, Assembly-CSharp
+        m_MethodName: EndEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   showDebugInfo: 1
 --- !u!4 &614461008
 Transform:
@@ -1331,52 +1344,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 850165766}
   m_SourcePrefab: {fileID: 100100000, guid: 3ca5888e0660341349ce2cb977c36320, type: 3}
---- !u!1 &915034372
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 915034374}
-  - component: {fileID: 915034373}
-  m_Layer: 0
-  m_Name: EnemySpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &915034373
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 915034372}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e68cbd0ab6a934045a1cc40f92f0be3d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyController
-  enemies:
-  - {fileID: 7397988777574611587, guid: abffde0a3a4264b79b43646e66b12d86, type: 3}
---- !u!4 &915034374
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 915034372}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -25.6, y: 2.07, z: 8.96}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &966489392
 GameObject:
   m_ObjectHideFlags: 0
@@ -1742,6 +1709,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1328037815}
   m_CullTransparentMesh: 1
+--- !u!1 &1500884668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1500884670}
+  - component: {fileID: 1500884669}
+  m_Layer: 0
+  m_Name: EndEvent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1500884669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500884668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8048d04f6b4a7ea99b36ca19aed844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EndHandler
+  sceneName: WorldView
+--- !u!4 &1500884670
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500884668}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -22.27788, y: 6.39391, z: 5.72001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1531299953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1945,6 +1957,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 26358965}
   m_SourcePrefab: {fileID: 100100000, guid: 004d92322d3174248804ae56a772cc28, type: 3}
+--- !u!1 &1807558716 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8932789996937505050, guid: 8cfea03eba59245d4851887778a22578, type: 3}
+  m_PrefabInstance: {fileID: 1873901061}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1832907609
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2174,10 +2191,10 @@ SceneRoots:
   - {fileID: 728332154}
   - {fileID: 330585546}
   - {fileID: 966489393}
-  - {fileID: 915034374}
   - {fileID: 183300205}
   - {fileID: 684215357}
   - {fileID: 565912588}
   - {fileID: 614461008}
   - {fileID: 2062871976}
   - {fileID: 1873901061}
+  - {fileID: 1500884670}
