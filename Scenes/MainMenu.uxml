@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scenes/MainMenu.uss?fileID=7433441132597879392&amp;guid=87d55525678254782b384f53ea870a72&amp;type=3#MainMenu" />
+    <ui:VisualElement style="flex-grow: 1;">
+        <ui:Label text="Combat Prototype" style="align-items: auto; align-self: center; -unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future.ttf?fileID=12800000&amp;guid=f19ee655bfc4e421882bf114b5042c91&amp;type=3#Kenney Future&quot;); font-size: 45%; -unity-font-style: normal; -unity-text-align: middle-center;" />
+        <ui:VisualElement style="flex-grow: 1;" />
+        <ui:Button text="Play" name="play-button" style="-unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future%20Narrow.ttf?fileID=12800000&amp;guid=c9d8013f7c69642b3b5346ac686690b6&amp;type=3#Kenney Future Narrow&quot;); width: 40%; align-items: auto; align-self: center; font-size: 26px; height: auto; cursor: initial; background-image: none;" />
+        <ui:Button text="Options" name="options-button" style="-unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future%20Narrow.ttf?fileID=12800000&amp;guid=c9d8013f7c69642b3b5346ac686690b6&amp;type=3#Kenney Future Narrow&quot;); width: 45%; align-self: center; font-size: 20px;" />
+        <ui:Button text="Exit" name="exit-button" style="-unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future%20Narrow.ttf?fileID=12800000&amp;guid=c9d8013f7c69642b3b5346ac686690b6&amp;type=3#Kenney Future Narrow&quot;); width: 40%; align-self: center; font-size: 19px; height: auto;" />
+        <ui:VisualElement style="flex-grow: 1;" />
+    </ui:VisualElement>
+</ui:UXML>

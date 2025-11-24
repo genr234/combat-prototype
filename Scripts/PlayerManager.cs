@@ -81,6 +81,7 @@ using UnityEngine.SceneManagement;
         private static void Die()
         {
             Debug.Log("Player has died.");
+            
             SceneManager.LoadScene("Scenes/WorldView");
         }
     }

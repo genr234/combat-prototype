@@ -1,9 +1,9 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine;
+using UnityEngine.UI;
 using GameObject = UnityEngine.GameObject;
 using MonoBehaviour = UnityEngine.MonoBehaviour;
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 
 public class EnemyVisualEffects : MonoBehaviour
 {

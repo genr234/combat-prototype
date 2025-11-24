@@ -25,7 +25,7 @@ namespace DefaultNamespace
                 Invoke(nameof(ResetCooldown), Cooldown);
             };
         }
-        
+
         private void FixedUpdate()
         {
             
@@ -45,11 +45,9 @@ namespace DefaultNamespace
             {
                 Debug.Log("Hit: " + hit.collider.gameObject.name);
                 var enemy = hit.transform.GetComponentInParent<EnemyManager>();
-                if (enemy != null)
-                {
-                    Debug.Log("hit " + enemy.name);
-                    enemy.TakeDamage(Damage);
-                }
+                if (enemy == null) return;
+                Debug.Log("hit " + enemy.name);
+                enemy.TakeDamage(Damage);
             }
             else
             {
@@ -60,7 +58,7 @@ namespace DefaultNamespace
         private Vector3 GetShootDirection()
         {
             // Get mouse position in screen space
-            Vector2 mousePos = Mouse.current.position.ReadValue();
+            var mousePos = Mouse.current.position.ReadValue();
             
             // Create a ray from the camera through the mouse position
             Ray ray = Camera.main.ScreenPointToRay(mousePos);
@@ -69,15 +67,12 @@ namespace DefaultNamespace
             Plane groundPlane = new Plane(Vector3.up, transform.position);
             
             // Raycast to find where the mouse points in the world
-            if (groundPlane.Raycast(ray, out float distance))
-            {
-                Vector3 worldPoint = ray.GetPoint(distance);
-                Vector3 direction = (worldPoint - transform.position).normalized;
-                return direction;
-            }
-            
+            if (!groundPlane.Raycast(ray, out float distance)) return transform.forward;
+            Vector3 worldPoint = ray.GetPoint(distance);
+            Vector3 direction = (worldPoint - transform.position).normalized;
+            return direction;
+
             // Fallback to forward direction if raycast fails
-            return transform.forward;
         }
 
         private void ResetCooldown()

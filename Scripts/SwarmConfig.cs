@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Swarm Config", menuName = "Combat Dystopian/Swarm Configuration")]
 public class SwarmConfig : ScriptableObject
