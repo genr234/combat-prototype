@@ -1,0 +1,11 @@
+:root {
+
+}
+
+.health-bar {
+    width: 40%;
+}
+
+.health-bar.unity-progress-bar__progress {
+    background-color: rgb(255, 0, 0);
+}
