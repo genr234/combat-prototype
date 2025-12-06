@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32e87bd0823546358bfc715d2a34694e, type: 3}
+  m_Name: DevastatorShotgun
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.WeaponConfig
+  weaponName: Devastator
+  damage: 35
+  cooldown: 0.8
+  range: 12
+  projectileRadius: 0.8
+  fireMode: 0
+  burstCount: 1
+  burstFireRate: 0.1
+  maxSpread: 20
+  spreadReductionWhileLocked: 0.4
+  magazineSize: 6
+  maxAmmo: 999
+  reloadTime: 2.5
+  infiniteAmmo: 0
+  penetrationCount: 0
+  hasBounce: 1
+  bounceCount: 0
+  explosionRadius: 3
+  explosionDamage: 20
+  muzzleFlashPrefab: {fileID: 0}
+  impactEffectPrefab: {fileID: 0}
+  projectileTrailPrefab: {fileID: 0}
+  weaponColor: {r: 1, g: 0.3, b: 0.1, a: 1}
+  muzzleFlashColor: {r: 1, g: 0.5, b: 0.2, a: 1}
+  screenShakeForce: 0.2
+  screenShakeDuration: 0.15
+  recoilForce: 0.15
+  recoilDuration: 0.2
+  shootSound: {fileID: 0}
+  reloadSound: {fileID: 0}
+  emptyClipSound: {fileID: 0}
+  shootVolume: 0.7
+  projectileSpeed: 40
+  criticalChance: 0.05
+  criticalMultiplier: 1.5
+  knockbackForce: 8
+  hitStopDuration: 0.03

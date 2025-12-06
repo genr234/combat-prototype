@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32e87bd0823546358bfc715d2a34694e, type: 3}
+  m_Name: PrecisionRifle
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.WeaponConfig
+  weaponName: Precision Rifle
+  damage: 12
+  cooldown: 0.15
+  range: 35
+  projectileRadius: 0.2
+  fireMode: 2
+  burstCount: 1
+  burstFireRate: 0.1
+  maxSpread: 3
+  spreadReductionWhileLocked: 0.9
+  magazineSize: 30
+  maxAmmo: 300
+  reloadTime: 2
+  infiniteAmmo: 1
+  penetrationCount: 2
+  hasBounce: 0
+  bounceCount: 0
+  explosionRadius: 0
+  explosionDamage: 0
+  muzzleFlashPrefab: {fileID: 0}
+  impactEffectPrefab: {fileID: 0}
+  projectileTrailPrefab: {fileID: 0}
+  weaponColor: {r: 0.2, g: 0.8, b: 1, a: 1}
+  muzzleFlashColor: {r: 0.4, g: 0.9, b: 1, a: 1}
+  screenShakeForce: 0.04
+  screenShakeDuration: 0.05
+  recoilForce: 0.03
+  recoilDuration: 0.08
+  shootSound: {fileID: 0}
+  reloadSound: {fileID: 0}
+  emptyClipSound: {fileID: 0}
+  shootVolume: 0.7
+  projectileSpeed: 100
+  criticalChance: 0.15
+  criticalMultiplier: 2.5
+  knockbackForce: 2
+  hitStopDuration: 0

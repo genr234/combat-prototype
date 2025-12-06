@@ -1,3 +1,29 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/Scenes/PlayerHud.uss?fileID=7433441132597879392&amp;guid=ddce8e8fd13644bf89b82b2fddd699c8&amp;type=3#PlayerHud" />
+    <ui:VisualElement name="hud-container" class="hud-container">
+        <ui:VisualElement name="health-section" class="health-section" style="display: flex; visibility: visible;">
+            <ui:Label name="health-label" class="health-label" />
+            <ui:VisualElement name="health-bar-container" class="health-bar-container" style="visibility: visible;">
+                <ui:VisualElement name="health-bar-fill" class="health-bar-fill" style="width: 100%;" />
+                <ui:Label name="health-text" text="0" enabled="true" class="health-text" style="display: flex;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="ammo-section" class="ammo-section">
+            <ui:Label name="weapon-name" class="weapon-name" />
+            <ui:VisualElement name="ammo-container" class="ammo-container">
+                <ui:Label name="ammo-current" class="ammo-current" />
+                <ui:Label name="ammo-separator" class="ammo-separator" />
+                <ui:Label name="ammo-total" class="ammo-total" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="reload-container" class="reload-container">
+        <ui:Label name="reload-text" text="RELOADING..." class="reload-text" />
+        <ui:VisualElement name="reload-bar-container" class="reload-bar-container">
+            <ui:VisualElement name="reload-bar-fill" class="reload-bar-fill" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="lockon-indicator" class="lockon-indicator" style="bottom: 995px; left: 958px; align-items: center;">
+        <ui:Label name="lockon-text" text="● LOCKED" class="lockon-text" />
+    </ui:VisualElement>
 </ui:UXML>

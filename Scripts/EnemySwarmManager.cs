@@ -92,7 +92,7 @@ public class EnemySwarmManager : MonoBehaviour
             return;
         }
         
-        SwarmConfig config = swarmWaves[waveIndex];
+        var config = swarmWaves[waveIndex];
         waveInProgress = true;
         totalEnemiesSpawned = 0;
         
@@ -101,7 +101,7 @@ public class EnemySwarmManager : MonoBehaviour
         if (showDebugInfo)
             Debug.Log($"Starting Wave {waveIndex + 1}: {config.swarmName}");
         
-        Vector3 center = GetSpawnCenter();
+        var center = GetSpawnCenter();
         
         if (config.spawnAllAtOnce)
         {
@@ -115,10 +115,10 @@ public class EnemySwarmManager : MonoBehaviour
     
     private void SpawnAllEnemies(SwarmConfig config, Vector3 center)
     {
-        List<GameObject> enemiesToSpawn = PrepareEnemyList(config);
-        List<Vector3> positions = CalculateSpawnPositions(config, enemiesToSpawn.Count, center);
+        var enemiesToSpawn = PrepareEnemyList(config);
+        var positions = CalculateSpawnPositions(config, enemiesToSpawn.Count, center);
         
-        for (int i = 0; i < enemiesToSpawn.Count; i++)
+        for (var i = 0; i < enemiesToSpawn.Count; i++)
         {
             SpawnEnemy(enemiesToSpawn[i], positions[i], config);
         }
@@ -126,10 +126,10 @@ public class EnemySwarmManager : MonoBehaviour
     
     private IEnumerator SpawnEnemiesOverTime(SwarmConfig config, Vector3 center)
     {
-        List<GameObject> enemiesToSpawn = PrepareEnemyList(config);
-        List<Vector3> positions = CalculateSpawnPositions(config, enemiesToSpawn.Count, center);
+        var enemiesToSpawn = PrepareEnemyList(config);
+        var positions = CalculateSpawnPositions(config, enemiesToSpawn.Count, center);
         
-        for (int i = 0; i < enemiesToSpawn.Count; i++)
+        for (var i = 0; i < enemiesToSpawn.Count; i++)
         {
             SpawnEnemy(enemiesToSpawn[i], positions[i], config);
             yield return new WaitForSeconds(config.spawnDelay);
@@ -138,12 +138,12 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<GameObject> PrepareEnemyList(SwarmConfig config)
     {
-        List<GameObject> enemies = new List<GameObject>();
+        var enemies = new List<GameObject>();
         config.enemyTypes.Sort((a, b) => a.spawnPriority.CompareTo(b.spawnPriority));
         
         foreach (var enemyData in config.enemyTypes)
         {
-            for (int i = 0; i < enemyData.count; i++)
+            for (var i = 0; i < enemyData.count; i++)
             {
                 enemies.Add(enemyData.enemyPrefab);
             }
@@ -186,12 +186,12 @@ public class EnemySwarmManager : MonoBehaviour
     
     private void SpawnEnemy(GameObject enemyPrefab, Vector3 position, SwarmConfig config)
     {
-        GameObject enemy = Instantiate(enemyPrefab, position, Quaternion.identity);
+        var enemy = Instantiate(enemyPrefab, position, Quaternion.identity);
         
-        EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
+        var enemyManager = enemy.GetComponent<EnemyManager>();
         if (enemyManager != null)
         {
-            float difficultyMultiplier = 1f + (currentWaveIndex * difficultyScalePerWave);
+            var difficultyMultiplier = 1f + (currentWaveIndex * difficultyScalePerWave);
             
             if (increaseDifficultyPerWave)
             {
@@ -223,16 +223,16 @@ public class EnemySwarmManager : MonoBehaviour
     {
         if (config.customSpawnEffect != null)
         {
-            GameObject effect = Instantiate(config.customSpawnEffect, position, Quaternion.identity);
+            var effect = Instantiate(config.customSpawnEffect, position, Quaternion.identity);
             Destroy(effect, 2f);
         }
         else
         {
-            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             particle.transform.position = position + Vector3.up * 0.5f;
             particle.transform.localScale = Vector3.one * 0.3f;
             
-            Renderer particleRenderer = particle.GetComponent<Renderer>();
+            var particleRenderer = particle.GetComponent<Renderer>();
             if (particleRenderer != null)
             {
                 particleRenderer.material.color = config.swarmColor;
@@ -263,11 +263,11 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetCircleFormation(int count, Vector3 center, float radius)
     {
-        List<Vector3> positions = new List<Vector3>();
-        for (int i = 0; i < count; i++)
+        var positions = new List<Vector3>();
+        for (var i = 0; i < count; i++)
         {
-            float angle = i * Mathf.PI * 2f / count;
-            Vector3 pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+            var angle = i * Mathf.PI * 2f / count;
+            var pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
             positions.Add(pos);
         }
         return positions;
@@ -275,11 +275,11 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetLineFormation(int count, Vector3 center, float length)
     {
-        List<Vector3> positions = new List<Vector3>();
-        float spacing = length / Mathf.Max(1, count - 1);
-        for (int i = 0; i < count; i++)
+        var positions = new List<Vector3>();
+        var spacing = length / Mathf.Max(1, count - 1);
+        for (var i = 0; i < count; i++)
         {
-            Vector3 pos = center + Vector3.right * (i * spacing - length / 2f);
+            var pos = center + Vector3.right * (i * spacing - length / 2f);
             positions.Add(pos);
         }
         return positions;
@@ -287,15 +287,15 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetGridFormation(int count, Vector3 center, float size)
     {
-        List<Vector3> positions = new List<Vector3>();
-        int columns = Mathf.CeilToInt(Mathf.Sqrt(count));
-        float spacing = size / Mathf.Max(1, columns - 1);
+        var positions = new List<Vector3>();
+        var columns = Mathf.CeilToInt(Mathf.Sqrt(count));
+        var spacing = size / Mathf.Max(1, columns - 1);
         
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            int row = i / columns;
-            int col = i % columns;
-            Vector3 pos = center + new Vector3(
+            var row = i / columns;
+            var col = i % columns;
+            var pos = center + new Vector3(
                 col * spacing - size / 2f,
                 0,
                 row * spacing - size / 2f
@@ -307,14 +307,14 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetSpiralFormation(int count, Vector3 center, float maxRadius)
     {
-        List<Vector3> positions = new List<Vector3>();
-        float goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
+        var positions = new List<Vector3>();
+        var goldenAngle = Mathf.PI * (3f - Mathf.Sqrt(5f));
         
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            float angle = i * goldenAngle;
-            float radius = maxRadius * Mathf.Sqrt(i / (float)count);
-            Vector3 pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+            var angle = i * goldenAngle;
+            var radius = maxRadius * Mathf.Sqrt(i / (float)count);
+            var pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
             positions.Add(pos);
         }
         return positions;
@@ -322,14 +322,14 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetVFormation(int count, Vector3 center, float size)
     {
-        List<Vector3> positions = new List<Vector3>();
-        int halfCount = count / 2;
+        var positions = new List<Vector3>();
+        var halfCount = count / 2;
         
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             float offset = (i < halfCount) ? i : (count - i - 1);
-            float side = (i < halfCount) ? -1f : 1f;
-            Vector3 pos = center + new Vector3(side * offset * size / halfCount, 0, -offset * size / halfCount);
+            var side = (i < halfCount) ? -1f : 1f;
+            var pos = center + new Vector3(side * offset * size / halfCount, 0, -offset * size / halfCount);
             positions.Add(pos);
         }
         return positions;
@@ -337,19 +337,19 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetSurroundingFormation(int count, Vector3 center, float radius)
     {
-        List<Vector3> positions = new List<Vector3>();
-        int rings = Mathf.Max(1, Mathf.CeilToInt(count / 8f));
-        int enemiesPerRing = Mathf.CeilToInt(count / (float)rings);
+        var positions = new List<Vector3>();
+        var rings = Mathf.Max(1, Mathf.CeilToInt(count / 8f));
+        var enemiesPerRing = Mathf.CeilToInt(count / (float)rings);
         
-        for (int ring = 0; ring < rings; ring++)
+        for (var ring = 0; ring < rings; ring++)
         {
-            float ringRadius = radius * (ring + 1) / rings;
-            int enemiesInThisRing = Mathf.Min(enemiesPerRing, count - positions.Count);
+            var ringRadius = radius * (ring + 1) / rings;
+            var enemiesInThisRing = Mathf.Min(enemiesPerRing, count - positions.Count);
             
-            for (int i = 0; i < enemiesInThisRing; i++)
+            for (var i = 0; i < enemiesInThisRing; i++)
             {
-                float angle = i * Mathf.PI * 2f / enemiesInThisRing + (ring * 0.5f);
-                Vector3 pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * ringRadius;
+                var angle = i * Mathf.PI * 2f / enemiesInThisRing + (ring * 0.5f);
+                var pos = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * ringRadius;
                 positions.Add(pos);
             }
         }
@@ -359,11 +359,11 @@ public class EnemySwarmManager : MonoBehaviour
     
     private List<Vector3> GetRandomFormation(int count, Vector3 center, float radius)
     {
-        List<Vector3> positions = new List<Vector3>();
-        for (int i = 0; i < count; i++)
+        var positions = new List<Vector3>();
+        for (var i = 0; i < count; i++)
         {
-            Vector2 randomCircle = Random.insideUnitCircle * radius;
-            Vector3 pos = center + new Vector3(randomCircle.x, 0, randomCircle.y);
+            var randomCircle = Random.insideUnitCircle * radius;
+            var pos = center + new Vector3(randomCircle.x, 0, randomCircle.y);
             positions.Add(pos);
         }
         return positions;
@@ -399,14 +399,14 @@ public class EnemySwarmManager : MonoBehaviour
         if (spawnCenter == null) return;
         
         Gizmos.color = Color.yellow;
-        Vector3 center = GetSpawnCenter();
+        var center = GetSpawnCenter();
         
         if (swarmWaves.Count > 0 && currentWaveIndex < swarmWaves.Count)
         {
-            SwarmConfig config = swarmWaves[currentWaveIndex];
+            var config = swarmWaves[currentWaveIndex];
             Gizmos.DrawWireSphere(center, config.spawnRadius);
             
-            List<Vector3> previewPositions = CalculateSpawnPositions(config, config.GetTotalEnemyCount(), center);
+            var previewPositions = CalculateSpawnPositions(config, config.GetTotalEnemyCount(), center);
             Gizmos.color = config.swarmColor;
             foreach (var pos in previewPositions)
             {

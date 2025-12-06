@@ -33,7 +33,7 @@ public class SwarmConfig : ScriptableObject
     
     public int GetTotalEnemyCount()
     {
-        int total = 0;
+        var total = 0;
         foreach (var enemy in enemyTypes)
         {
             total += enemy.count;

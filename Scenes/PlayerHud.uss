@@ -1,11 +1,205 @@
 :root {
-
+    --health-color: rgb(220, 50, 50);
+    --health-bg: rgba(80, 20, 20, 0.8);
+    --ammo-color: rgb(255, 200, 50);
+    --ammo-bg: rgba(80, 60, 20, 0.8);
+    --panel-bg: rgba(0, 0, 0, 0.6);
+    --text-color: rgb(255, 255, 255);
+    --reload-color: rgb(100, 180, 255);
 }
 
-.health-bar {
-    width: 40%;
+/* Main HUD Container */
+.hud-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 120px;
+    padding: 15px 25px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
-.health-bar.unity-progress-bar__progress {
-    background-color: rgb(255, 0, 0);
+/* Health Section */
+.health-section {
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 250px;
+}
+
+.health-label {
+    color: var(--text-color);
+    font-size: 14px;
+    margin-bottom: 5px;
+    -unity-font-style: bold;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+}
+
+.health-bar-container {
+    width: 250px;
+    height: 25px;
+    background-color: var(--health-bg);
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.health-bar-fill {
+    height: 100%;
+    background-color: var(--health-color);
+    transition-duration: 0.2s;
+    transition-property: width;
+}
+
+.health-bar-fill.low {
+    background-color: rgb(255, 80, 80);
+}
+
+.health-bar-fill.critical {
+    background-color: rgb(255, 50, 50);
+}
+
+.health-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    -unity-text-align: middle-center;
+    color: var(--text-color);
+    font-size: 14px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Ammo Section */
+.ammo-section {
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 200px;
+}
+
+.weapon-name {
+    color: var(--ammo-color);
+    font-size: 16px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8);
+}
+
+.ammo-container {
+    flex-direction: row;
+    align-items: center;
+}
+
+.ammo-current {
+    color: var(--text-color);
+    font-size: 36px;
+    -unity-font-style: bold;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.9);
+}
+
+.ammo-separator {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 24px;
+    margin: 0 5px;
+}
+
+.ammo-total {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+    margin-top: 8px;
+}
+
+/* Reload Indicator */
+.reload-container {
+    position: absolute;
+    left: 50%;
+    bottom: 140px;
+    translate: -50% 0;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transition-duration: 0.2s;
+    transition-property: opacity;
+}
+
+.reload-container.visible {
+    opacity: 1;
+}
+
+.reload-text {
+    color: var(--reload-color);
+    font-size: 18px;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.9);
+}
+
+.reload-bar-container {
+    width: 200px;
+    height: 8px;
+    background-color: rgba(50, 80, 120, 0.6);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.reload-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--reload-color);
+    transition-duration: 0.05s;
+    transition-property: width;
+}
+
+/* Lock-On Indicator */
+.lockon-indicator {
+    position: absolute;
+    left: 50%;
+    bottom: 180px;
+    translate: -50% 0;
+    padding: 8px 16px;
+    background-color: rgba(0, 150, 0, 0.7);
+    border-radius: 4px;
+    opacity: 0;
+    transition-duration: 0.15s;
+    transition-property: opacity;
+}
+
+.lockon-indicator.active {
+    opacity: 1;
+}
+
+.lockon-text {
+    color: rgb(150, 255, 150);
+    font-size: 14px;
+    -unity-font-style: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Critical/Low Ammo Warning */
+.ammo-warning {
+    color: rgb(255, 100, 100);
+}
+
+.ammo-empty {
+    color: rgb(255, 50, 50);
+}
+
+/* Flash effect for damage */
+.health-bar-fill.flash {
+    background-color: rgb(255, 255, 255);
+}
+
+/* Pulsing animation for critical health */
+@keyframes pulse-critical {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.health-bar-fill.critical {
+    animation: pulse-critical 0.5s ease-in-out infinite;
 }

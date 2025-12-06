@@ -7,7 +7,7 @@ public class SwarmConfigHelper : MonoBehaviour
     [ContextMenu("Basic Swarm Config")]
     public void CreateBasicSwarm()
     {
-        SwarmConfig config = ScriptableObject.CreateInstance<SwarmConfig>();
+        var config = ScriptableObject.CreateInstance<SwarmConfig>();
         config.swarmName = "Basic Assault";
         config.description = "A simple wave of enemies";
         config.formationType = SpawnFormationType.Circle;
@@ -29,7 +29,7 @@ public class SwarmConfigHelper : MonoBehaviour
     [ContextMenu("Spiral Swarm Config")]
     public void CreateSpiralSwarm()
     {
-        SwarmConfig config = ScriptableObject.CreateInstance<SwarmConfig>();
+        var config = ScriptableObject.CreateInstance<SwarmConfig>();
         config.swarmName = "Spiral Onslaught";
         config.description = "Enemies spawn in a mesmerizing spiral pattern";
         config.formationType = SpawnFormationType.Spiral;
@@ -53,7 +53,7 @@ public class SwarmConfigHelper : MonoBehaviour
     [ContextMenu("Boss Swarm Config")]
     public void CreateBossSwarm()
     {
-        SwarmConfig config = ScriptableObject.CreateInstance<SwarmConfig>();
+        var config = ScriptableObject.CreateInstance<SwarmConfig>();
         config.swarmName = "Elite Squadron";
         config.description = "Few but powerful enemies";
         config.formationType = SpawnFormationType.VFormation;
@@ -79,7 +79,7 @@ public class SwarmConfigHelper : MonoBehaviour
     [ContextMenu("Surrounding Swarm Config")]
     public void CreateSurroundingSwarm()
     {
-        SwarmConfig config = ScriptableObject.CreateInstance<SwarmConfig>();
+        var config = ScriptableObject.CreateInstance<SwarmConfig>();
         config.swarmName = "Encirclement";
         config.description = "Enemies surround the player from all sides";
         config.formationType = SpawnFormationType.Surrounding;

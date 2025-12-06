@@ -66,7 +66,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: fb492ae6860f4443c90d63d6c58cdd01, type: 3}
       propertyPath: m_Name
-      value: Gun 1
+      value: Devastator
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -123,7 +123,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786d2079e62946519f1118b0abdde5ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GunHandler
+  currentWeapon: {fileID: 11400000, guid: a2efb9e3e2bbd4b5eb581ea7b4fca1d0, type: 2}
   Cooldown: 0.2
   Damage: 1
   Range: 8
   cursorTexture: {fileID: 2800000, guid: 4aafd1a448499492dbdcfe21c082c405, type: 3}
+  lockedCursorTexture: {fileID: 0}
+  muzzlePoint: {fileID: 0}
+  lockOnReticle: {fileID: -3888481672020999207, guid: 9964c0d6c42de4ef9bdaf66717ca5203, type: 3}

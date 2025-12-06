@@ -13,10 +13,12 @@ public class PlayerManager : MonoBehaviour
         set
         {
             health = Mathf.Max(0, value);
-            UpdateHealthUI();
+            OnHealthChanged();
         }
     }
     [SerializeField] public int health = 100;
+    public int maxHealth = 100;
+    
     private int level;
     private bool onCooldown;
     private bool isInvincible;
@@ -26,9 +28,8 @@ public class PlayerManager : MonoBehaviour
     public GameObject startingWeapon;
     private GameObject equippedWeapon;
 
-    public UIDocument uiDocument;
-    private VisualElement Root => uiDocument != null ? uiDocument.rootVisualElement : null;
-    private Label healthLabel;
+    // HUD Controller reference
+    private PlayerHudController hudController;
 
     private void Awake()
     {
@@ -38,26 +39,11 @@ public class PlayerManager : MonoBehaviour
 
     private void Start()
     {
-        if (uiDocument != null)
+        // Find HUD Controller
+        hudController = FindFirstObjectByType<PlayerHudController>();
+        if (hudController != null)
         {
-            var root = Root;
-
-            if (root != null)
-            {
-                Debug.LogWarning("Root has no children! Creating Label programmatically...");
-                healthLabel = new Label($"Health: {health}/100");
-                healthLabel.name = "health-text";
-                root.Add(healthLabel);
-            }
-            else
-            {
-                Debug.LogWarning("Root is null!");
-            }
-            
-        }
-        else
-        {
-            Debug.LogWarning("UIDocument not assigned!");
+            hudController.maxHealth = maxHealth;
         }
 
         if (weaponHolder == null)
@@ -108,6 +94,14 @@ public class PlayerManager : MonoBehaviour
         if (onCooldown) return;
 
         Health -= damage;
+        
+        print("Player took " + damage + " damage. Current health: " + Health);
+
+        // Flash health bar on damage
+        if (hudController != null)
+        {
+            hudController.FlashHealthBar();
+        }
 
         if (Health <= 0)
         {
@@ -121,8 +115,9 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private IEnumerator DamageCooldownCoroutine(int seconds)
+    private IEnumerator DamageCooldownCoroutine(int milliseconds)
     {
+        var seconds = milliseconds / 1000f;
         onCooldown = true;
         yield return new WaitForSeconds(seconds);
         onCooldown = false;
@@ -135,18 +130,10 @@ public class PlayerManager : MonoBehaviour
         isInvincible = false;
     }
 
-    private void UpdateHealthUI()
+    private void OnHealthChanged()
     {
-        if (healthLabel == null)
-        {
-            Debug.LogWarning("Health label is null, cannot update UI!");
-            return;
-        }
-        
-        // Update the text to reflect current health
-        healthLabel.text = $"Health: {health}/100";
-        
-        Debug.Log($"UI Updated - Health: {health}/100");
+        // Health changed - HUD controller updates automatically in Update()
+        Debug.Log($"Health changed: {health}/{maxHealth}");
     }
 
     private void Die()

@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using GameObject = UnityEngine.GameObject;
 using MonoBehaviour = UnityEngine.MonoBehaviour;
 
@@ -16,6 +16,18 @@ public class EnemyVisualEffects : MonoBehaviour
     public bool flashOnDamage = true;
     public Color damageFlashColor = Color.red;
     public float flashDuration = 0.1f;
+    public bool shakeOnDamage = true;
+    public float shakeMagnitude = 0.1f;
+    public float shakeDuration = 0.15f;
+    
+    [Header("Knockback Settings")]
+    public bool enableKnockback = true;
+    public float knockbackRecoverySpeed = 5f;
+    
+    [Header("Blood/Hit Particles")]
+    public GameObject hitParticlesPrefab;
+    public Color hitParticleColor = new Color(0.8f, 0.1f, 0.1f);
+    public int hitParticleCount = 10;
     
     [Header("Death Effects")]
     public GameObject deathParticles;
@@ -23,25 +35,31 @@ public class EnemyVisualEffects : MonoBehaviour
     public float explosionForce = 5f;
     
     private Vector3 originalScale;
+    private Vector3 originalPosition;
     private Renderer[] renderers;
     private Color[] originalColors;
     private EnemyManager enemyManager;
+    private Rigidbody rb;
     private bool isSpawning = false;
     private float spawnTimer = 0f;
+    private bool isShaking = false;
+    private Coroutine shakeCoroutine;
     
     private void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
         originalColors = new Color[renderers.Length];
         
-        for (int i = 0; i < renderers.Length; i++)
+        for (var i = 0; i < renderers.Length; i++)
         {
             if (renderers[i].material != null)
                 originalColors[i] = renderers[i].material.color;
         }
         
         originalScale = transform.localScale;
+        originalPosition = transform.localPosition;
         enemyManager = GetComponent<EnemyManager>();
+        rb = GetComponent<Rigidbody>();
     }
     
     private void Start()
@@ -59,8 +77,8 @@ public class EnemyVisualEffects : MonoBehaviour
         if (isSpawning)
         {
             spawnTimer += Time.deltaTime;
-            float progress = Mathf.Clamp01(spawnTimer / spawnDuration);
-            float scaleValue = spawnScaleCurve.Evaluate(progress);
+            var progress = Mathf.Clamp01(spawnTimer / spawnDuration);
+            var scaleValue = spawnScaleCurve.Evaluate(progress);
             transform.localScale = originalScale * scaleValue;
             
             if (progress >= 1f)
@@ -73,11 +91,132 @@ public class EnemyVisualEffects : MonoBehaviour
     
     public void PlayDamageEffect()
     {
-        if (flashOnDamage && !isSpawning)
+        if (!isSpawning)
         {
-            StopAllCoroutines();
-            StartCoroutine(DamageFlash());
+            if (flashOnDamage)
+            {
+                StopCoroutine("DamageFlash");
+                StartCoroutine(DamageFlash());
+            }
+            
+            if (shakeOnDamage && !isShaking)
+            {
+                if (shakeCoroutine != null)
+                    StopCoroutine(shakeCoroutine);
+                shakeCoroutine = StartCoroutine(DamageShake());
+            }
+            
+            SpawnHitParticles();
         }
+    }
+    
+    /// <summary>
+    /// Apply knockback force to the enemy
+    /// </summary>
+    public void PlayKnockback(Vector3 direction, float force)
+    {
+        if (!enableKnockback) return;
+        
+        if (rb != null)
+        {
+            // Use rigidbody for physics-based knockback
+            rb.AddForce(direction.normalized * force, ForceMode.Impulse);
+        }
+        else
+        {
+            // Use transform-based knockback
+            StartCoroutine(TransformKnockback(direction.normalized * force * 0.1f));
+        }
+    }
+    
+    private IEnumerator TransformKnockback(Vector3 offset)
+    {
+        var knockbackTarget = transform.position + offset;
+        var elapsed = 0f;
+        var duration = 0.2f;
+        var startPos = transform.position;
+        
+        // Move to knockback position
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            var t = elapsed / duration;
+            t = 1f - Mathf.Pow(1f - t, 3f); // Ease out
+            transform.position = Vector3.Lerp(startPos, knockbackTarget, t);
+            yield return null;
+        }
+    }
+    
+    private void SpawnHitParticles()
+    {
+        if (hitParticlesPrefab != null)
+        {
+            var particles = Instantiate(hitParticlesPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            Destroy(particles, 1f);
+        }
+        else
+        {
+            // Create procedural hit particles
+            CreateProceduralHitParticles();
+        }
+    }
+    
+    private void CreateProceduralHitParticles()
+    {
+        var particleObj = new GameObject("HitParticles");
+        particleObj.transform.position = transform.position + Vector3.up * 0.5f;
+        
+        var ps = particleObj.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.startLifetime = 0.4f;
+        main.startSpeed = 3f;
+        main.startSize = 0.15f;
+        main.startColor = hitParticleColor;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.gravityModifier = 1f;
+        
+        var emission = ps.emission;
+        emission.rateOverTime = 0;
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, (short)hitParticleCount) });
+        
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.2f;
+        
+        var sizeOverLifetime = ps.sizeOverLifetime;
+        sizeOverLifetime.enabled = true;
+        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0, 1, 1, 0));
+        
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+        
+        Destroy(particleObj, 0.5f);
+    }
+    
+    private IEnumerator DamageShake()
+    {
+        isShaking = true;
+        var elapsed = 0f;
+        var startPos = transform.localPosition;
+        
+        while (elapsed < shakeDuration)
+        {
+            elapsed += Time.deltaTime;
+            var progress = elapsed / shakeDuration;
+            var currentMagnitude = shakeMagnitude * (1f - progress);
+            
+            var shakeOffset = new Vector3(
+                Random.Range(-1f, 1f) * currentMagnitude,
+                0,
+                Random.Range(-1f, 1f) * currentMagnitude
+            );
+            
+            transform.localPosition = startPos + shakeOffset;
+            yield return null;
+        }
+        
+        transform.localPosition = startPos;
+        isShaking = false;
     }
     
     private System.Collections.IEnumerator DamageFlash()
@@ -90,7 +229,7 @@ public class EnemyVisualEffects : MonoBehaviour
         
         yield return new WaitForSeconds(flashDuration);
         
-        for (int i = 0; i < renderers.Length; i++)
+        for (var i = 0; i < renderers.Length; i++)
         {
             if (renderers[i] != null && renderers[i].material != null)
                 renderers[i].material.color = originalColors[i];
@@ -112,20 +251,20 @@ public class EnemyVisualEffects : MonoBehaviour
     
     private void CreateDeathExplosion()
     {
-        int particleCount = 10;
-        for (int i = 0; i < particleCount; i++)
+        var particleCount = 10;
+        for (var i = 0; i < particleCount; i++)
         {
-            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var particle = GameObject.CreatePrimitive(PrimitiveType.Cube);
             particle.transform.position = transform.position;
             particle.transform.localScale = Vector3.one * 0.2f;
             
-            Renderer renderer = particle.GetComponent<Renderer>();
+            var renderer = particle.GetComponent<Renderer>();
             if (renderer != null && originalColors.Length > 0)
             {
                 renderer.material.color = originalColors[0];
             }
             
-            Rigidbody rb = particle.AddComponent<Rigidbody>();
+            var rb = particle.AddComponent<Rigidbody>();
             rb.AddExplosionForce(explosionForce * 100f, transform.position, 5f);
             
             Destroy(particle, 1f);
@@ -191,7 +330,7 @@ public class SwarmUIManager : MonoBehaviour
     {
         if (enemiesRemainingText != null)
         {
-            int remaining = 0;
+            var remaining = 0;
             var enemies = FindObjectsOfType<EnemyManager>();
             remaining = enemies.Length;
             enemiesRemainingText.text = $"Enemies: {remaining}";
