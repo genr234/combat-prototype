@@ -159,14 +159,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
   m_Graph: {fileID: -7719775756726287145, guid: c348b4cee35f54ab69cc9fe384f48fa1, type: 2}
   m_BlackboardVariableOverridesList:
-  - rid: 6346539822387822960
-  - rid: 6346539846496944602
+  - rid: 4185760627882459311
+  - rid: 4185760627882459312
   m_IsInitialised: 0
   m_IsStarted: 0
   references:
     version: 2
     RefIds:
-    - rid: 6346539822387822960
+    - rid: 4185760627882459311
       type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         GUID:
@@ -174,14 +174,14 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 7397988777574611587}
-    - rid: 6346539846496944602
+    - rid: 4185760627882459312
       type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
         GUID:
           m_Value0: 9931813477128535496
           m_Value1: 2771763550811160443
         Name: Target
-        m_Value: {fileID: 0}
+        m_Value: {fileID: 8932789996937505050, guid: 8cfea03eba59245d4851887778a22578, type: 3}
 --- !u!195 &-462317049228286243
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -261,6 +261,14 @@ MonoBehaviour:
   flashOnDamage: 1
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
+  shakeOnDamage: 1
+  shakeMagnitude: 0.1
+  shakeDuration: 0.15
+  enableKnockback: 1
+  knockbackRecoverySpeed: 5
+  hitParticlesPrefab: {fileID: 0}
+  hitParticleColor: {r: 0.8, g: 0.1, b: 0.1, a: 1}
+  hitParticleCount: 10
   deathParticles: {fileID: 0}
   explodeOnDeath: 1
   explosionForce: 5

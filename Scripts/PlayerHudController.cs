@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using DefaultNamespace;
 
 public class PlayerHudController : MonoBehaviour
 {

@@ -1,29 +1,33 @@
 using System;
 using Unity.Behavior;
-using UnityEngine;
-using Action = Unity.Behavior.Action;
 using Unity.Properties;
+using UnityEngine;
+using UnityEngine.Serialization;
+using Action = Unity.Behavior.Action;
 
-[Serializable, GeneratePropertyBag]
-[NodeDescription(name: "Attack", story: "Attacks [Target]", category: "Action", id: "8ef62b2a85309e86bd67820401dd0f80")]
-public partial class AttackAction : Action
+namespace Actions
 {
-    [SerializeReference] public BlackboardVariable<GameObject> Target;
-    [SerializeReference] public BlackboardVariable<int> Damage;
-    protected override Status OnStart()
+    [Serializable, GeneratePropertyBag]
+    [NodeDescription(name: "Attack", story: "Attacks [Target]", category: "Action", id: "8ef62b2a85309e86bd67820401dd0f80")]
+    public partial class AttackAction : Action
     {
-        Target.Value.GetComponent<PlayerManager>().TakeDamage(Damage, 200);
-        return Status.Running;
-    }
+        [FormerlySerializedAs("Target")] [SerializeReference] public BlackboardVariable<GameObject> target;
+        [FormerlySerializedAs("Damage")] [SerializeReference] public BlackboardVariable<int> damage;
+        protected override Status OnStart()
+        {
+            target.Value.GetComponent<PlayerManager>().TakeDamage(damage, 200);
+            return Status.Running;
+        }
 
-    protected override Status OnUpdate()
-    {
+        protected override Status OnUpdate()
+        {
         
-        return Status.Success;
-    }
+            return Status.Success;
+        }
 
-    protected override void OnEnd()
-    {
+        protected override void OnEnd()
+        {
+        }
     }
 }
 
