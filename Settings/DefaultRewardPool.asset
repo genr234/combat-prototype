@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c89c19d8d5f84dcb9cec0f040a01d9b3, type: 3}
+  m_Name: DefaultRewardPool
+  m_EditorClassIdentifier: Assembly-CSharp::RewardPool
+  availableBuffs:
+  - {fileID: 11400000, guid: 81dc8d4aaef5f49c8a3939abdda7b6d3, type: 2}
+  - {fileID: 11400000, guid: 5cea2035137fc446e822dbcbac8b46d6, type: 2}
+  - {fileID: 11400000, guid: 24c8ec7a2a38d49db9555714635ed2ac, type: 2}
+  - {fileID: 11400000, guid: c86be2e52ab1c445e8e21709532a2d54, type: 2}
+  - {fileID: 11400000, guid: 83a4dd939e4e54e1e9813c911dbeaa09, type: 2}
+  - {fileID: 11400000, guid: ab7d81a1d79be4333962def95b34ad1d, type: 2}
+  - {fileID: 11400000, guid: 2e72397c474174a8b97026b21c793170, type: 2}
+  - {fileID: 11400000, guid: 3c42e96aa5c40479984178c5b836f134, type: 2}
+  - {fileID: 11400000, guid: e3a57977154934234948507b1258ac4c, type: 2}
+  - {fileID: 11400000, guid: 4d5903e97d4a04ac8b42fcd8ef56db60, type: 2}
+  - {fileID: 11400000, guid: 5f3c4736a33a5495f9a931bb04aa8ed6, type: 2}
+  - {fileID: 11400000, guid: 5d48adb7ddd4945b483198a1603bf239, type: 2}
+  - {fileID: 11400000, guid: 531196420573f4e6fb4f725c916706f1, type: 2}
+  - {fileID: 11400000, guid: f273c8a2d980440c19045861f7325f90, type: 2}
+  - {fileID: 11400000, guid: 0d98d56bc196745bf88cbbea51433efd, type: 2}
+  - {fileID: 11400000, guid: fe31de8aa6ba8406aaa710ca03e6c8cb, type: 2}
+  - {fileID: 11400000, guid: 23448c7adcaa54620925eb01c5eae313, type: 2}
+  - {fileID: 11400000, guid: fc59c13cedea84439b96b0c348861eee, type: 2}
+  - {fileID: 11400000, guid: 9630988176d40448e9b53b800af70620, type: 2}
+  - {fileID: 11400000, guid: 315af63a2b69d4caf91c7141638ed515, type: 2}
+  - {fileID: 11400000, guid: 722510879bb2d493f9197064b7890a6a, type: 2}
+  - {fileID: 11400000, guid: 08144a019f78b464786306d86de790d7, type: 2}
+  availableWeapons:
+  - {fileID: 11400000, guid: 6e1061189eb7343b18c79e5a29119006, type: 2}
+  - {fileID: 11400000, guid: a2efb9e3e2bbd4b5eb581ea7b4fca1d0, type: 2}
+  - {fileID: 11400000, guid: c76072e0e82db4428b986d3d6cb484ed, type: 2}
+  numberOfChoices: 3
+  weaponChance: 0.25
+  commonWeight: 50
+  uncommonWeight: 30
+  rareWeight: 15
+  epicWeight: 4
+  legendaryWeight: 1

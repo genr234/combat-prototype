@@ -83,7 +83,7 @@ public class LockOnReticle : MonoBehaviour
         Vector3 targetScreenPos;
 
         // If locked on a target, follow the target
-        if (targetingSystem.IsLockedOn && targetingSystem.CurrentTarget != null)
+        if (targetingSystem.IsLockedOn && targetingSystem.CurrentTarget)
         {
             var targetWorldPos = targetingSystem.CurrentTarget.position;
             targetScreenPos = cam.WorldToScreenPoint(targetWorldPos);

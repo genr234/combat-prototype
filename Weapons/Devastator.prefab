@@ -127,7 +127,7 @@ MonoBehaviour:
   Cooldown: 0.2
   Damage: 1
   Range: 8
-  cursorTexture: {fileID: 2800000, guid: 4aafd1a448499492dbdcfe21c082c405, type: 3}
+  cursorTexture: {fileID: 0}
   lockedCursorTexture: {fileID: 0}
   muzzlePoint: {fileID: 0}
-  lockOnReticle: {fileID: -3888481672020999207, guid: 9964c0d6c42de4ef9bdaf66717ca5203, type: 3}
+  lockOnReticlePrefab: {fileID: 4398254871170853546, guid: b652a65f8b25b427791ad5925bdc4d95, type: 3}

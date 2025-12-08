@@ -22,6 +22,7 @@ public class GunHandler : MonoBehaviour
     [Header("Components")]
     private TargetingSystem targetingSystem;
     private ShootingEffects shootingEffects;
+    private PlayerBuffSystem buffSystem;
         
     [Header("State")]
     private bool onCooldown;
@@ -30,6 +31,11 @@ public class GunHandler : MonoBehaviour
     private bool isReloading;
     private bool isFiring;
     private bool hasNotifiedHUD = false;
+    private bool inputEnabled = true; // Track if input is enabled
+    
+    // Input actions references
+    private InputAction attackAction;
+    private InputAction reloadAction;
         
     // Public properties for UI access
     public int CurrentAmmo => currentAmmo;
@@ -66,6 +72,10 @@ public class GunHandler : MonoBehaviour
         {
             shootingEffects = gameObject.AddComponent<ShootingEffects>();
         }
+
+        // Find PlayerBuffSystem
+        var player = transform.root.gameObject;
+        buffSystem = player.GetComponent<PlayerBuffSystem>();
 
         // Find HUD controller
         hudController = FindFirstObjectByType<PlayerHudController>();
@@ -104,7 +114,7 @@ public class GunHandler : MonoBehaviour
     private void CreateProceduralReticle()
     {
         // Find the UI root or create one
-        Canvas canvas = FindFirstObjectByType<Canvas>();
+        var canvas = FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogWarning("[GunHandler] No Canvas found in scene, creating procedural reticle without UI");
@@ -116,12 +126,12 @@ public class GunHandler : MonoBehaviour
         lockOnReticleInstance.transform.SetParent(canvas.transform, false);
 
         // Add RectTransform
-        RectTransform rectTransform = lockOnReticleInstance.AddComponent<RectTransform>();
+        var rectTransform = lockOnReticleInstance.AddComponent<RectTransform>();
         rectTransform.sizeDelta = new Vector2(100, 100);
         rectTransform.anchoredPosition = Vector2.zero;
 
         // Add Image component
-        Image image = lockOnReticleInstance.AddComponent<Image>();
+        var image = lockOnReticleInstance.AddComponent<Image>();
         image.color = Color.red;
 
         // Add LockOnReticle controller
@@ -135,14 +145,14 @@ public class GunHandler : MonoBehaviour
     {
         InputSystem.actions.Enable();
             
-        var attackAction = InputSystem.actions.FindAction("Player/Attack");
+        attackAction = InputSystem.actions.FindAction("Player/Attack");
         if (attackAction != null)
         {
             attackAction.performed += OnAttackPerformed;
             attackAction.canceled += OnAttackCanceled;
         }
 
-        var reloadAction = InputSystem.actions.FindAction("Player/Reload");
+        reloadAction = InputSystem.actions.FindAction("Player/Reload");
         if (reloadAction != null)
         {
             reloadAction.performed += ctx => StartReload();
@@ -175,7 +185,7 @@ public class GunHandler : MonoBehaviour
         }
     }
 
-    private void SetupCursor()
+    public void SetupCursor()
     {
         if (cursorTexture != null)
         {
@@ -183,7 +193,26 @@ public class GunHandler : MonoBehaviour
         }
     }
 
-        private void Update()
+    /// <summary>
+    /// Disable shooting input (called when UI is shown)
+    /// </summary>
+    public void DisableInput()
+    {
+        inputEnabled = false;
+        isFiring = false; // Stop any ongoing firing
+        Debug.Log("[GunHandler] Input disabled");
+    }
+
+    /// <summary>
+    /// Re-enable shooting input (called when UI is hidden)
+    /// </summary>
+    public void EnableInput()
+    {
+        inputEnabled = true;
+        Debug.Log("[GunHandler] Input enabled");
+    }
+
+    private void Update()
         {
             // Try to find HUD controller if not found yet (might not be initialized during InitializeComponents)
             if (!hasNotifiedHUD && hudController == null)
@@ -228,6 +257,7 @@ public class GunHandler : MonoBehaviour
 
     private void OnAttackPerformed(InputAction.CallbackContext ctx)
     {
+        if (!inputEnabled) return; // Block input if disabled
         isFiring = true;
 
         if (onCooldown || isReloading) return;
@@ -256,6 +286,7 @@ public class GunHandler : MonoBehaviour
 
     private void OnAttackCanceled(InputAction.CallbackContext ctx)
     {
+        if (!inputEnabled) return; // Block input if disabled
         isFiring = false;
     }
 
@@ -317,6 +348,11 @@ public class GunHandler : MonoBehaviour
 
         // Handle penetration
         var maxPenetration = currentWeapon != null ? currentWeapon.penetrationCount + 1 : 1;
+        // Add buff system penetration bonus
+        if (buffSystem != null)
+        {
+            maxPenetration += buffSystem.PenetrationBonus;
+        }
         var hits = Physics.SphereCastAll(origin, projectileRadius, shootDirection, range);
             
         // Sort by distance
@@ -348,8 +384,21 @@ public class GunHandler : MonoBehaviour
                 isCritical = false;
             }
 
+            // Apply buff system modifiers
+            if (buffSystem != null)
+            {
+                damage = buffSystem.CalculateDamage(damage, out var buffCrit);
+                isCritical = isCritical || buffCrit;
+            }
+
             // Apply damage
             enemy.TakeDamage(damage);
+            
+            // Process life steal
+            if (buffSystem != null)
+            {
+                buffSystem.ProcessLifeSteal(damage);
+            }
 
             // Create floating damage number
             if (shootingEffects)
@@ -376,10 +425,15 @@ public class GunHandler : MonoBehaviour
             Debug.Log($"Hit {enemy.name} for {damage} damage{(isCritical ? " (CRITICAL!)" : "")}");
         }
 
-        // Handle explosion
-        if (currentWeapon && currentWeapon.explosionRadius > 0 && didHit)
+        // Handle explosion (from weapon or buff)
+        var explosionRadius = currentWeapon != null ? currentWeapon.explosionRadius : 0f;
+        if (buffSystem != null)
         {
-            HandleExplosion(hitPoint);
+            explosionRadius += buffSystem.ExplosionRadiusBonus;
+        }
+        if (explosionRadius > 0 && didHit)
+        {
+            HandleExplosion(hitPoint, explosionRadius);
         }
 
         // Play visual effects
@@ -390,36 +444,48 @@ public class GunHandler : MonoBehaviour
 
         // Start cooldown
         var cooldown = currentWeapon ? currentWeapon.cooldown : Cooldown;
+        // Apply fire rate buff (higher multiplier = faster fire rate = shorter cooldown)
+        if (buffSystem != null && buffSystem.FireRateMultiplier > 0)
+        {
+            cooldown /= buffSystem.FireRateMultiplier;
+        }
         onCooldown = true;
         Invoke(nameof(ResetCooldown), cooldown);
     }
 
-    private void HandleExplosion(Vector3 center)
+    private void HandleExplosion(Vector3 center, float radius)
     {
-        if (!currentWeapon) return;
-
+        var explosionDamage = currentWeapon != null ? currentWeapon.explosionDamage : 20f;
+        
         // Create explosion visual effect
-        shootingEffects.CreateExplosionEffect(center, currentWeapon.explosionRadius, currentWeapon);
+        if (shootingEffects != null)
+        {
+            shootingEffects.CreateExplosionEffect(center, radius, currentWeapon);
+        }
 
         // Find and damage enemies in explosion radius
-        var enemiesInRadius = targetingSystem.GetEnemiesInRadius(center, currentWeapon.explosionRadius);
+        var enemiesInRadius = targetingSystem.GetEnemiesInRadius(center, radius);
             
         foreach (var enemy in enemiesInRadius)
         {
             var distance = Vector3.Distance(center, enemy.transform.position);
-            var damageMultiplier = 1f - (distance / currentWeapon.explosionRadius);
-            var explosionDamage = Mathf.RoundToInt(currentWeapon.explosionDamage * damageMultiplier);
+            var damageMultiplier = 1f - (distance / radius);
+            var finalExplosionDamage = Mathf.RoundToInt(explosionDamage * damageMultiplier);
 
-            if (explosionDamage <= 0) continue;
-            enemy.TakeDamage(explosionDamage);
-            shootingEffects.CreateFloatingDamageNumber(enemy.transform.position + Vector3.up, explosionDamage, false);
+            if (finalExplosionDamage <= 0) continue;
+            enemy.TakeDamage(finalExplosionDamage);
+            if (shootingEffects != null)
+            {
+                shootingEffects.CreateFloatingDamageNumber(enemy.transform.position + Vector3.up, finalExplosionDamage, false);
+            }
 
             // Knockback from explosion center
             var knockbackDir = (enemy.transform.position - center).normalized;
             var enemyEffects = enemy.GetComponent<EnemyVisualEffects>();
             if (enemyEffects)
             {
-                enemyEffects.PlayKnockback(knockbackDir, currentWeapon.knockbackForce * 2f);
+                var knockbackForce = currentWeapon != null ? currentWeapon.knockbackForce * 2f : 10f;
+                enemyEffects.PlayKnockback(knockbackDir, knockbackForce);
             }
         }
     }

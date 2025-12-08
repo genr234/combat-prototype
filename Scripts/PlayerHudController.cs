@@ -223,13 +223,11 @@ public class PlayerHudController : MonoBehaviour
                     }
                 }
 
-                if (ammoTotal != null)
+                if (ammoTotal == null) return;
+                var totalText = total.ToString();
+                if (ammoTotal.text != totalText)
                 {
-                    var totalText = total.ToString();
-                    if (ammoTotal.text != totalText)
-                    {
-                        ammoTotal.text = totalText;
-                    }
+                    ammoTotal.text = totalText;
                 }
             }
         }
@@ -247,10 +245,7 @@ public class PlayerHudController : MonoBehaviour
     /// </summary>
     public void ShowReloadIndicator()
     {
-        if (reloadContainer != null)
-        {
-            reloadContainer.AddToClassList("visible");
-        }
+        reloadContainer?.AddToClassList("visible");
     }
 
     /// <summary>

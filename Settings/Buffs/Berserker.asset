@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69553f122eb435b8ed82cea5a9f8363, type: 3}
+  m_Name: Berserker
+  m_EditorClassIdentifier: Assembly-CSharp::BuffConfig
+  buffName: Berserker
+  description: Massive {percent}% damage increase
+  icon: {fileID: 0}
+  buffType: 0
+  rarity: 4
+  flatBonus: 0
+  percentageBonus: 0.75
+  canStack: 1
+  maxStacks: 5
+  buffColor: {r: 1, g: 0.6, b: 0, a: 1}

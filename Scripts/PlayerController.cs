@@ -9,6 +9,9 @@ public class PlayerController : MonoBehaviour
     public float speed = 5f;
     public CameraController cameraController;
     
+    [Header("Buff Modifiers")]
+    [HideInInspector] public float speedMultiplier = 1f;
+    
     private void Start() 
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -18,7 +21,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         var inputVector = InputSystem.actions.FindAction("Player/Move").ReadValue<Vector2>();
-        var movement = new Vector3(inputVector.x, 0, inputVector.y) * (speed * Time.fixedDeltaTime);
+        var movement = new Vector3(inputVector.x, 0, inputVector.y) * (speed * speedMultiplier * Time.fixedDeltaTime);
         var rotation = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0);
         movement = rotation * movement;
         _rigidbody.MovePosition(_rigidbody.position + movement);
