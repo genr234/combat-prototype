@@ -131,8 +131,38 @@ public class RewardSelectionManager : MonoBehaviour
     {
         Debug.Log("[RewardSystem] GrantRewards called");
         
-        // Get rewards to grant (uses rewardPool.numberOfChoices)
-        var rewards = rewardPool != null ? rewardPool.GetRandomRewards() : GenerateFallbackRewards();
+        // Get the currently equipped weapon to exclude from rewards
+        WeaponConfig equippedWeapon = null;
+        if (gunHandler == null)
+        {
+            var playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                foreach (Transform child in playerObj.transform)
+                {
+                    foreach (Transform child2 in child.transform)
+                    {
+                        var gh = child2.GetComponent<GunHandler>();
+                        if (gh != null)
+                        {
+                            gunHandler = gh;
+                            Debug.Log("[RewardSystem] ✓ Found GunHandler on player");
+                            break;
+                        }
+                    }
+                    if (gunHandler != null) break;
+                }
+            }
+        }
+        
+        if (gunHandler != null && gunHandler.currentWeapon != null)
+        {
+            equippedWeapon = gunHandler.currentWeapon;
+            Debug.Log($"[RewardSystem] Currently equipped weapon: {equippedWeapon.weaponName}");
+        }
+        
+        // Get rewards to grant (uses rewardPool.numberOfChoices, excluding equipped weapon)
+        var rewards = rewardPool != null ? rewardPool.GetRandomRewards(equippedWeapon) : GenerateFallbackRewards();
         
         Debug.Log($"[RewardSystem] Reward pool: {(rewardPool != null ? "YES" : "NO")}, Rewards count: {rewards?.Count ?? 0}");
         
@@ -166,27 +196,16 @@ public class RewardSelectionManager : MonoBehaviour
             }
             else if (!reward.isBuff && reward.weapon != null)
             {
-                if (gunHandler == null)
+                if (gunHandler != null)
                 {
-                    var playerObj = GameObject.FindWithTag("Player");
-                    foreach (Transform child in playerObj.transform)
-                    {
-                        foreach (Transform child2 in child.transform)
-                        {
-                            var gh = child2.GetComponent<GunHandler>();
-                            if (gh != null)
-                            {
-                                gunHandler = gh;
-                                Debug.Log("[RewardSystem] ✓ Found GunHandler on player");
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                    gunHandler.SwitchWeapon(reward.weapon);
+                    grantedRewards.Add($"{reward.weapon.weaponName}");
+                    Debug.Log($"[RewardSystem] ✓ Auto-granted weapon: {reward.weapon.weaponName}");
                 }
-                gunHandler.SwitchWeapon(reward.weapon);
-                grantedRewards.Add($"{reward.weapon.weaponName}");
-                Debug.Log($"[RewardSystem] ✓ Auto-granted weapon: {reward.weapon.weaponName}");
+                else
+                {
+                    Debug.LogError("[RewardSystem] GunHandler is NULL, cannot switch weapon!");
+                }
             }
             else
             {
@@ -256,9 +275,9 @@ public class RewardSelectionManager : MonoBehaviour
             {
                 var rewardLabel = new Label($"✓ {rewardName}");
                 rewardLabel.AddToClassList("reward-item");
-                rewardLabel.style.fontSize = 18;
+                rewardLabel.style.fontSize = 14;
                 rewardLabel.style.color = new Color(0.4f, 1f, 0.4f);
-                rewardLabel.style.marginBottom = 5;
+                rewardLabel.style.marginBottom = 3;
                 rewardLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
                 rewardList.Add(rewardLabel);
             }
@@ -316,43 +335,43 @@ public class RewardSelectionManager : MonoBehaviour
         // Create notification panel (top-center)
         notificationPanel = new VisualElement();
         notificationPanel.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.95f);
-        notificationPanel.style.borderTopLeftRadius = 12;
-        notificationPanel.style.borderTopRightRadius = 12;
-        notificationPanel.style.borderBottomLeftRadius = 12;
-        notificationPanel.style.borderBottomRightRadius = 12;
+        notificationPanel.style.borderTopLeftRadius = 8;
+        notificationPanel.style.borderTopRightRadius = 8;
+        notificationPanel.style.borderBottomLeftRadius = 8;
+        notificationPanel.style.borderBottomRightRadius = 8;
         notificationPanel.style.borderLeftColor = new Color(1f, 0.8f, 0.2f, 0.9f);
         notificationPanel.style.borderRightColor = new Color(1f, 0.8f, 0.2f, 0.9f);
         notificationPanel.style.borderTopColor = new Color(1f, 0.8f, 0.2f, 0.9f);
         notificationPanel.style.borderBottomColor = new Color(1f, 0.8f, 0.2f, 0.9f);
-        notificationPanel.style.borderLeftWidth = 3;
-        notificationPanel.style.borderRightWidth = 3;
-        notificationPanel.style.borderTopWidth = 3;
-        notificationPanel.style.borderBottomWidth = 3;
-        notificationPanel.style.paddingTop = 20;
-        notificationPanel.style.paddingBottom = 20;
-        notificationPanel.style.paddingLeft = 30;
-        notificationPanel.style.paddingRight = 30;
+        notificationPanel.style.borderLeftWidth = 2;
+        notificationPanel.style.borderRightWidth = 2;
+        notificationPanel.style.borderTopWidth = 2;
+        notificationPanel.style.borderBottomWidth = 2;
+        notificationPanel.style.paddingTop = 12;
+        notificationPanel.style.paddingBottom = 12;
+        notificationPanel.style.paddingLeft = 18;
+        notificationPanel.style.paddingRight = 18;
         notificationPanel.style.alignItems = Align.Center;
-        notificationPanel.style.minWidth = 300;
-        notificationPanel.style.maxWidth = 500;
+        notificationPanel.style.minWidth = 220;
+        notificationPanel.style.maxWidth = 380;
         notificationPanel.pickingMode = PickingMode.Ignore; // Don't capture any input!
         notificationContainer.Add(notificationPanel);
         
         // Title
         var title = new Label("WAVE COMPLETE!");
         title.name = "notification-title";
-        title.style.fontSize = 28;
+        title.style.fontSize = 22;
         title.style.color = new Color(1f, 0.8f, 0.2f);
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
-        title.style.marginBottom = 5;
+        title.style.marginBottom = 3;
         title.style.unityTextAlign = TextAnchor.MiddleCenter;
         notificationPanel.Add(title);
         
         // Subtitle
         var subtitle = new Label("Rewards Granted:");
-        subtitle.style.fontSize = 16;
+        subtitle.style.fontSize = 13;
         subtitle.style.color = new Color(0.8f, 0.8f, 0.8f);
-        subtitle.style.marginBottom = 15;
+        subtitle.style.marginBottom = 10;
         subtitle.style.unityTextAlign = TextAnchor.MiddleCenter;
         notificationPanel.Add(subtitle);
         
@@ -388,25 +407,25 @@ public class RewardSelectionManager : MonoBehaviour
         buffDisplayPanel.style.top = 10;
         buffDisplayPanel.style.right = 10;
         buffDisplayPanel.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.85f);
-        buffDisplayPanel.style.borderTopLeftRadius = 8;
-        buffDisplayPanel.style.borderTopRightRadius = 8;
-        buffDisplayPanel.style.borderBottomLeftRadius = 8;
-        buffDisplayPanel.style.borderBottomRightRadius = 8;
-        buffDisplayPanel.style.paddingTop = 12;
-        buffDisplayPanel.style.paddingBottom = 12;
-        buffDisplayPanel.style.paddingLeft = 15;
-        buffDisplayPanel.style.paddingRight = 15;
-        buffDisplayPanel.style.minWidth = 200;
-        buffDisplayPanel.style.maxWidth = 300;
+        buffDisplayPanel.style.borderTopLeftRadius = 6;
+        buffDisplayPanel.style.borderTopRightRadius = 6;
+        buffDisplayPanel.style.borderBottomLeftRadius = 6;
+        buffDisplayPanel.style.borderBottomRightRadius = 6;
+        buffDisplayPanel.style.paddingTop = 8;
+        buffDisplayPanel.style.paddingBottom = 8;
+        buffDisplayPanel.style.paddingLeft = 10;
+        buffDisplayPanel.style.paddingRight = 10;
+        buffDisplayPanel.style.minWidth = 160;
+        buffDisplayPanel.style.maxWidth = 240;
         buffDisplayPanel.pickingMode = PickingMode.Ignore;
         root.Add(buffDisplayPanel);
         
         // Title
         var title = new Label("ACTIVE BUFFS");
-        title.style.fontSize = 14;
+        title.style.fontSize = 11;
         title.style.color = new Color(1f, 0.8f, 0.2f);
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
-        title.style.marginBottom = 8;
+        title.style.marginBottom = 5;
         title.style.unityTextAlign = TextAnchor.UpperCenter;
         buffDisplayPanel.Add(title);
         
@@ -419,7 +438,7 @@ public class RewardSelectionManager : MonoBehaviour
         // Initial empty message
         var emptyLabel = new Label("No buffs yet");
         emptyLabel.name = "empty-message";
-        emptyLabel.style.fontSize = 12;
+        emptyLabel.style.fontSize = 10;
         emptyLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
         emptyLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
         activeBuffsContainer.Add(emptyLabel);
@@ -448,16 +467,16 @@ public class RewardSelectionManager : MonoBehaviour
             var buffEntry = new VisualElement();
             buffEntry.style.flexDirection = FlexDirection.Row;
             buffEntry.style.alignItems = Align.Center;
-            buffEntry.style.marginBottom = 6;
-            buffEntry.style.paddingTop = 4;
-            buffEntry.style.paddingBottom = 4;
-            buffEntry.style.paddingLeft = 6;
-            buffEntry.style.paddingRight = 6;
+            buffEntry.style.marginBottom = 4;
+            buffEntry.style.paddingTop = 3;
+            buffEntry.style.paddingBottom = 3;
+            buffEntry.style.paddingLeft = 5;
+            buffEntry.style.paddingRight = 5;
             buffEntry.style.backgroundColor = new Color(0.15f, 0.15f, 0.2f, 0.8f);
-            buffEntry.style.borderTopLeftRadius = 4;
-            buffEntry.style.borderTopRightRadius = 4;
-            buffEntry.style.borderBottomLeftRadius = 4;
-            buffEntry.style.borderBottomRightRadius = 4;
+            buffEntry.style.borderTopLeftRadius = 3;
+            buffEntry.style.borderTopRightRadius = 3;
+            buffEntry.style.borderBottomLeftRadius = 3;
+            buffEntry.style.borderBottomRightRadius = 3;
             buffEntry.style.borderLeftWidth = 2;
             buffEntry.style.borderLeftColor = new Color(0.4f, 1f, 0.4f);
             
@@ -465,20 +484,20 @@ public class RewardSelectionManager : MonoBehaviour
             if (buffConfig != null)
             {
                 var icon = new Label(GetBuffIcon(buffConfig.buffType));
-                icon.style.fontSize = 16;
-                icon.style.marginRight = 6;
+                icon.style.fontSize = 13;
+                icon.style.marginRight = 4;
                 buffEntry.Add(icon);
             }
             
             // "NEW" indicator
             var newIndicator = new Label("NEW");
-            newIndicator.style.fontSize = 10;
+            newIndicator.style.fontSize = 9;
             newIndicator.style.color = new Color(1f, 1f, 0.3f);
             newIndicator.style.unityFontStyleAndWeight = FontStyle.Bold;
-            newIndicator.style.marginRight = 6;
+            newIndicator.style.marginRight = 4;
             newIndicator.style.backgroundColor = new Color(1f, 0.8f, 0f, 0.3f);
-            newIndicator.style.paddingLeft = 4;
-            newIndicator.style.paddingRight = 4;
+            newIndicator.style.paddingLeft = 3;
+            newIndicator.style.paddingRight = 3;
             newIndicator.style.paddingTop = 2;
             newIndicator.style.paddingBottom = 2;
             newIndicator.style.borderTopLeftRadius = 3;
@@ -489,7 +508,7 @@ public class RewardSelectionManager : MonoBehaviour
             
             // Buff name
             var nameLabel = new Label(buffName);
-            nameLabel.style.fontSize = 12;
+            nameLabel.style.fontSize = 11;
             nameLabel.style.color = Color.white;
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
             buffEntry.Add(nameLabel);

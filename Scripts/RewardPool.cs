@@ -29,7 +29,7 @@ public class RewardPool : ScriptableObject
     /// <summary>
     /// Get random reward choices
     /// </summary>
-    public List<RewardChoice> GetRandomRewards()
+    public List<RewardChoice> GetRandomRewards(WeaponConfig equippedWeapon = null)
     {
         var choices = new List<RewardChoice>();
 
@@ -39,7 +39,7 @@ public class RewardPool : ScriptableObject
 
             if (isWeapon)
             {
-                var weapon = GetRandomWeapon();
+                var weapon = GetRandomWeapon(equippedWeapon);
                 if (weapon != null)
                 {
                     choices.Add(new RewardChoice(weapon));
@@ -83,10 +83,24 @@ public class RewardPool : ScriptableObject
         return candidates[Random.Range(0, candidates.Count)];
     }
 
-    private WeaponConfig GetRandomWeapon()
+    private WeaponConfig GetRandomWeapon(WeaponConfig equippedWeapon = null)
     {
         if (availableWeapons.Count == 0) return null;
-        return availableWeapons[Random.Range(0, availableWeapons.Count)];
+
+        // Filter out the equipped weapon if provided
+        var availableChoices = availableWeapons;
+        if (equippedWeapon != null)
+        {
+            availableChoices = availableWeapons.FindAll(w => w != equippedWeapon);
+        }
+
+        // If all weapons are equipped (shouldn't happen), return null to skip weapon reward
+        if (availableChoices.Count == 0)
+        {
+            return null;
+        }
+
+        return availableChoices[Random.Range(0, availableChoices.Count)];
     }
 
     private BuffRarity SelectRarityByWeight()
