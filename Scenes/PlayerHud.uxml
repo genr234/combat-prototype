@@ -23,6 +23,13 @@
             <ui:VisualElement name="reload-bar-fill" class="reload-bar-fill" />
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="dash-container" class="dash-container">
+        <ui:Label name="dash-label" text="DASH" class="dash-label" />
+        <ui:VisualElement name="dash-cooldown-bar-container" class="dash-cooldown-bar-container">
+            <ui:VisualElement name="dash-cooldown-bar" class="dash-cooldown-bar" />
+        </ui:VisualElement>
+        <ui:Label text="space to activate!&#10;" style="color: rgb(100, 200, 255); -unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future.ttf?fileID=12800000&amp;guid=f19ee655bfc4e421882bf114b5042c91&amp;type=3#Kenney Future&quot;);" />
+    </ui:VisualElement>
     <ui:VisualElement name="lockon-indicator" class="lockon-indicator" style="bottom: 995px; left: 958px; align-items: center;">
         <ui:Label name="lockon-text" text="● LOCKED" class="lockon-text" />
     </ui:VisualElement>

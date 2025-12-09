@@ -12,22 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32e87bd0823546358bfc715d2a34694e, type: 3}
   m_Name: BlasterStandard
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.WeaponConfig
-  weaponName: Blaster Standard
+  weaponPrefab: {fileID: 7776159232057583567, guid: cedda0f7eacb04490856b5c24ef565ba, type: 3}
+  weaponName: Blaster
   damage: 15
-  cooldown: 0.3
+  cooldown: 0.4
   range: 25
   projectileRadius: 0.4
-  fireMode: 0
+  fireMode: 1
   burstCount: 1
-  burstFireRate: 0.1
+  burstFireRate: 0.2
   maxSpread: 8
-  spreadReductionWhileLocked: 0.7
+  spreadReductionWhileLocked: 0.405
   magazineSize: 12
   maxAmmo: 120
   reloadTime: 1.5
   infiniteAmmo: 1
-  penetrationCount: 0
-  hasBounce: 0
+  penetrationCount: 1
+  hasBounce: 1
   bounceCount: 0
   explosionRadius: 0
   explosionDamage: 0

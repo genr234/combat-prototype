@@ -7,6 +7,7 @@ public class PlayerHudController : MonoBehaviour
     public UIDocument uiDocument;
     public PlayerManager playerManager;
     public GunHandler gunHandler;
+    public PlayerController playerController;
 
     [Header("Settings")]
     public int maxHealth = 100;
@@ -22,6 +23,8 @@ public class PlayerHudController : MonoBehaviour
     private Label ammoTotal;
     private VisualElement reloadContainer;
     private VisualElement reloadBarFill;
+    private VisualElement dashCooldownBar;
+    private Label dashLabel;
 
     // State
     private bool isReloading;
@@ -44,6 +47,11 @@ public class PlayerHudController : MonoBehaviour
         if (playerManager == null)
         {
             playerManager = FindFirstObjectByType<PlayerManager>();
+        }
+
+        if (playerController == null)
+        {
+            playerController = FindFirstObjectByType<PlayerController>();
         }
 
         if (gunHandler == null)
@@ -111,6 +119,10 @@ public class PlayerHudController : MonoBehaviour
         reloadContainer = root.Q<VisualElement>("reload-container");
         reloadBarFill = root.Q<VisualElement>("reload-bar-fill");
         
+        // Dash elements
+        dashCooldownBar = root.Q<VisualElement>("dash-cooldown-bar");
+        dashLabel = root.Q<Label>("dash-label");
+        
         // Initial update
         UpdateHealthUI();
         UpdateAmmoUI();
@@ -138,6 +150,7 @@ public class PlayerHudController : MonoBehaviour
 
         UpdateHealthUI();
         UpdateAmmoUI();
+        UpdateDashUI();
     }
 
     private void UpdateHealthUI()
@@ -307,5 +320,42 @@ public class PlayerHudController : MonoBehaviour
     public void OnWeaponChanged()
     {
         UpdateAmmoUI();
+    }
+    
+    private void UpdateDashUI()
+    {
+        if (!playerController) return;
+
+        // Update dash cooldown bar
+        if (dashCooldownBar != null)
+        {
+            float cooldownProgress = 1f - playerController.DashCooldownProgress;
+            dashCooldownBar.style.width = new Length(cooldownProgress * 100f, LengthUnit.Percent);
+            
+            // Add/remove class based on cooldown state
+            dashCooldownBar.RemoveFromClassList("dash-ready");
+            if (playerController.CanDash)
+            {
+                dashCooldownBar.AddToClassList("dash-ready");
+            }
+        }
+        
+        // Update dash label
+        if (dashLabel != null)
+        {
+            if (playerController.IsDashing)
+            {
+                dashLabel.text = "DASH!";
+            }
+            else if (playerController.CanDash)
+            {
+                dashLabel.text = "DASH";
+            }
+            else
+            {
+                float cooldownPercent = (1f - playerController.DashCooldownProgress) * 100f;
+                dashLabel.text = $"DASH {cooldownPercent:F0}%";
+            }
+        }
     }
 }

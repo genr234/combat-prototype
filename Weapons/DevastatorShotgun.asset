@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32e87bd0823546358bfc715d2a34694e, type: 3}
   m_Name: DevastatorShotgun
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.WeaponConfig
+  weaponPrefab: {fileID: 4419689991502975317, guid: 331eafb3e2f6c439faf1555a7390e04e, type: 3}
   weaponName: Devastator
   damage: 35
-  cooldown: 0.8
+  cooldown: 0.6
   range: 12
   projectileRadius: 0.8
   fireMode: 0
@@ -45,7 +46,7 @@ MonoBehaviour:
   emptyClipSound: {fileID: 0}
   shootVolume: 0.7
   projectileSpeed: 40
-  criticalChance: 0.05
+  criticalChance: 0.24
   criticalMultiplier: 1.5
   knockbackForce: 8
   hitStopDuration: 0.03
