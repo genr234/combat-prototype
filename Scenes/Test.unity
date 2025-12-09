@@ -873,6 +873,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
   - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
   - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
+  - {fileID: 11400000, guid: 6bb93c46fc35a4d86987c610f2f69607, type: 2}
   autoStartWaves: 1
   timeBetweenWaves: 4
   waveTarget: {fileID: 1807558716}
@@ -977,8 +984,10 @@ MonoBehaviour:
   rewardPool: {fileID: 11400000, guid: 02cda94fa1f4f421b9a075f98c2d29b3, type: 2}
   uiDocument: {fileID: 2137132632}
   autoCreateDefaults: 1
-  isSelectionActive: 0
+  notificationDuration: 2
+  rewardsPerWave: 1
   currentWave: 0
+  playerBuffSystem: {fileID: 1807558725}
 --- !u!4 &700199849
 Transform:
   m_ObjectHideFlags: 0
@@ -1895,6 +1904,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8932789996937505050, guid: 8cfea03eba59245d4851887778a22578, type: 3}
   m_PrefabInstance: {fileID: 1873901061}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1807558725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807558716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfb69f8ed1144b74aff885f8c79a97d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBuffSystem
+  activeBuffs: []
 --- !u!1001 &1832907609
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1989,7 +2011,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7206264592346698927, guid: 8cfea03eba59245d4851887778a22578, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20.88615
+      value: -18.18
       objectReference: {fileID: 0}
     - target: {fileID: 7206264592346698927, guid: 8cfea03eba59245d4851887778a22578, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2054,7 +2076,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8932789996937505050, guid: 8cfea03eba59245d4851887778a22578, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1807558725}
   m_SourcePrefab: {fileID: 100100000, guid: 8cfea03eba59245d4851887778a22578, type: 3}
 --- !u!1 &1958807431 stripped
 GameObject:

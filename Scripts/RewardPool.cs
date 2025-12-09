@@ -12,7 +12,7 @@ public class RewardPool : ScriptableObject
     public List<WeaponConfig> availableWeapons = new List<WeaponConfig>();
 
     [Header("Selection Settings")]
-    [Range(2, 5)]
+    [Range(1, 5)]
     public int numberOfChoices = 3;
 
     [Range(0f, 1f)]

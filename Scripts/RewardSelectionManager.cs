@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Manages the reward selection UI and game pause during selection
-/// This is the main controller - attach to a GameObject in the scene
+/// Auto-assigns buffs and shows non-interactive notifications
+/// No UI clicking, no input conflicts, no cursor issues
 /// </summary>
 public class RewardSelectionManager : MonoBehaviour
 {
@@ -19,29 +18,26 @@ public class RewardSelectionManager : MonoBehaviour
     [Tooltip("Automatically create default buffs if reward pool is empty")]
     public bool autoCreateDefaults = true;
     
+    [Header("Notification Settings")]
+    [Tooltip("How long to show the reward notification")]
+    public float notificationDuration = 4f;
+    
+    [Tooltip("Number of rewards to grant per wave")]
+    public int rewardsPerWave = 1;
+    
     [Header("State")]
-    [SerializeField] private bool isSelectionActive;
     [SerializeField] private int currentWave;
     
     // UI Elements
     private VisualElement root;
-    private VisualElement selectionPanel;
-    private Label waveLabel;
-    private VisualElement choicesContainer;
+    private VisualElement notificationPanel;
+    private VisualElement buffDisplayPanel; // Permanent buff display
+    private VisualElement activeBuffsContainer;
     
     // References
-    private PlayerBuffSystem playerBuffSystem;
+    public PlayerBuffSystem playerBuffSystem;
     private GunHandler gunHandler;
     private EnemySwarmManager swarmManager;
-    
-    // Current choices
-    private List<RewardChoice> currentChoices = new List<RewardChoice>();
-    
-    // Cursor state storage
-    private CursorLockMode previousCursorLockMode;
-    private bool previousCursorVisible;
-    
-    public bool IsSelectionActive => isSelectionActive;
     
     // Singleton for easy access
     public static RewardSelectionManager Instance { get; private set; }
@@ -63,38 +59,17 @@ public class RewardSelectionManager : MonoBehaviour
         // Ensure UIDocument has proper settings
         if (uiDocument.panelSettings == null)
         {
-            // Create runtime PanelSettings
             var panelSettings = ScriptableObject.CreateInstance<UnityEngine.UIElements.PanelSettings>();
             panelSettings.name = "RuntimePanelSettings";
-            panelSettings.scaleMode = UnityEngine.UIElements.PanelScaleMode.ConstantPixelSize;
-            panelSettings.sortingOrder = 100; // High sorting order to be on top
+            panelSettings.scaleMode = UnityEngine.UIElements.PanelScaleMode.ScaleWithScreenSize;
+            panelSettings.referenceResolution = new Vector2Int(1920, 1080);
+            panelSettings.sortingOrder = 100;
             uiDocument.panelSettings = panelSettings;
-            Debug.Log("[RewardSelection] Created runtime PanelSettings");
         }
     }
     
     private void Start()
     {
-        // Find references
-        var player = GameObject.FindGameObjectWithTag("Player");
-        if (player == null)
-        {
-            Debug.LogWarning("[RewardSelection] No player found with 'Player' tag!");
-        }
-        else
-        {
-            playerBuffSystem = player.GetComponent<PlayerBuffSystem>();
-            if (playerBuffSystem == null)
-            {
-                playerBuffSystem = player.AddComponent<PlayerBuffSystem>();
-                Debug.Log("[RewardSelection] Added PlayerBuffSystem to player");
-            }
-            gunHandler = player.GetComponentInChildren<GunHandler>();
-            if (gunHandler == null)
-            {
-                Debug.LogWarning("[RewardSelection] No GunHandler found on player!");
-            }
-        }
         
         swarmManager = FindFirstObjectByType<EnemySwarmManager>();
         
@@ -102,25 +77,33 @@ public class RewardSelectionManager : MonoBehaviour
         if (swarmManager != null)
         {
             swarmManager.OnWaveComplete.AddListener(OnWaveCompleted);
-            Debug.Log("[RewardSelection] Subscribed to wave complete event");
+            Debug.Log("[RewardSystem] ✓ Subscribed to EnemySwarmManager.OnWaveComplete");
         }
         else
         {
-            Debug.LogWarning("[RewardSelection] No EnemySwarmManager found! Rewards won't show automatically.");
+            Debug.LogError("[RewardSystem] ✗ No EnemySwarmManager found in scene!");
         }
         
         // Auto-create defaults if needed
         if (autoCreateDefaults && rewardPool == null)
         {
-            Debug.Log("[RewardSelection] Creating default reward pool...");
+            Debug.Log("[RewardSystem] Auto-creating default reward pool...");
             CreateDefaultRewardPool();
+            Debug.Log("[RewardSystem] ✓ Default reward pool created (using fallback buffs)");
+        }
+        else if (rewardPool != null)
+        {
+            Debug.Log($"[RewardSystem] ✓ Using configured RewardPool with {rewardPool.availableBuffs.Count} buffs");
+        }
+        else
+        {
+            Debug.Log("[RewardSystem] Will use fallback rewards on wave complete");
         }
         
         // Build UI
         BuildUI();
-        HideSelection();
         
-        Debug.Log("[RewardSelection] Initialization complete");
+        Debug.Log("[RewardSystem] ✓ Initialization complete");
     }
     
     private void OnDestroy()
@@ -131,152 +114,178 @@ public class RewardSelectionManager : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        // Test with new input system - check for R key from UI action or direct test
-        var testAction = InputSystem.actions.FindAction("UI/Submit");
-        if (testAction != null && testAction.WasPerformedThisFrame())
-        {
-            // Only trigger if UI is not active and player presses the submit action
-            if (!isSelectionActive && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
-                // Alternative: Use a dedicated test key through actions
-                // For now, we'll keep the direct input for testing
-            }
-        }
-        
-        // Direct test with R key for quick testing (can be removed in production)
-        var keyboard = Keyboard.current;
-        if (keyboard != null && keyboard.rKey.wasPressedThisFrame && !isSelectionActive)
-        {
-            Debug.Log("[RewardSelection] Manual trigger via R key");
-            ShowSelection();
-        }
-    }
-    
     /// <summary>
-    /// Called when a wave is completed
+    /// Called when a wave is completed - auto-grants rewards
     /// </summary>
     private void OnWaveCompleted(int waveIndex)
     {
         currentWave = waveIndex + 1;
-        Debug.Log($"[RewardSelection] Wave {currentWave} completed, showing rewards");
-        ShowSelection();
+        Debug.Log($"[RewardSystem] Wave {currentWave} completed, granting rewards");
+        GrantRewards();
     }
     
     /// <summary>
-    /// Show the reward selection UI
+    /// Automatically grant rewards and show notification
     /// </summary>
-    public void ShowSelection()
+    private void GrantRewards()
     {
-        if (isSelectionActive) return;
+        Debug.Log("[RewardSystem] GrantRewards called");
         
-        isSelectionActive = true;
+        // Get rewards to grant (uses rewardPool.numberOfChoices)
+        var rewards = rewardPool != null ? rewardPool.GetRandomRewards() : GenerateFallbackRewards();
         
-        // Save current cursor state
-        previousCursorLockMode = UnityEngine.Cursor.lockState;
-        previousCursorVisible = UnityEngine.Cursor.visible;
+        Debug.Log($"[RewardSystem] Reward pool: {(rewardPool != null ? "YES" : "NO")}, Rewards count: {rewards?.Count ?? 0}");
         
-        // PAUSE the game to prevent any input conflicts
-        Time.timeScale = 0f;
-        
-        // Unlock cursor for UI interaction
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible = true;
-        
-        // Disable shooting input while UI is active
-        if (gunHandler != null)
+        if (rewards == null || rewards.Count == 0)
         {
-            gunHandler.DisableInput();
+            Debug.LogWarning("[RewardSystem] No rewards generated!");
+            return;
         }
         
-        // Generate choices
-        currentChoices = rewardPool != null ? rewardPool.GetRandomRewards() : GenerateFallbackChoices();
+        // Auto-apply all rewards
+        var grantedRewards = new List<string>();
+        var buffDetails = new List<BuffConfig>(); // Track buff configs for detailed display
         
-        // Update UI
-        UpdateUI();
-        
-        // Show panel
-        if (selectionPanel != null)
+        foreach (var reward in rewards)
         {
-            selectionPanel.style.display = DisplayStyle.Flex;
-        }
-        
-        Debug.Log("[RewardSelection] Selection shown with " + currentChoices.Count + " choices (GAME PAUSED)");
-    }
-    
-    /// <summary>
-    /// Hide the reward selection UI
-    /// </summary>
-    public void HideSelection()
-    {
-        isSelectionActive = false;
-        
-        // Resume game
-        Time.timeScale = 1f;
-        
-        // Re-enable shooting input
-        if (gunHandler != null)
-        {
-            gunHandler.EnableInput();
-            gunHandler.SetupCursor();
-        }
-        
-        // Restore previous cursor state
-        UnityEngine.Cursor.lockState = previousCursorLockMode;
-        UnityEngine.Cursor.visible = previousCursorVisible;
-        
-        // Hide panel
-        if (selectionPanel != null)
-        {
-            selectionPanel.style.display = DisplayStyle.None;
-        }
-        
-        Debug.Log("[RewardSelection] Selection hidden, cursor state restored, GAME RESUMED");
-    }
-    
-    /// <summary>
-    /// Select a reward
-    /// </summary>
-    public void SelectReward(int index)
-    {
-        if (index < 0 || index >= currentChoices.Count) return;
-        
-        var choice = currentChoices[index];
-        
-        if (choice.isBuff)
-        {
-            // Apply buff
-            if (playerBuffSystem != null)
+            Debug.Log($"[RewardSystem] Processing reward: isBuff={reward.isBuff}, buff={reward.buff?.buffName ?? "NULL"}, weapon={reward.weapon?.weaponName ?? "NULL"}");
+            
+            if (reward.isBuff && reward.buff != null)
             {
-                playerBuffSystem.AddBuff(choice.buff);
-                Debug.Log($"[RewardSelection] Applied buff: {choice.buff.buffName}");
+                if (playerBuffSystem != null)
+                {
+                    playerBuffSystem.AddBuff(reward.buff);
+                    grantedRewards.Add(GetBuffDisplayName(reward.buff));
+                    buffDetails.Add(reward.buff);
+                    Debug.Log($"[RewardSystem] ✓ Auto-granted buff: {reward.buff.buffName}");
+                }
+                else
+                {
+                    Debug.LogError("[RewardSystem] PlayerBuffSystem is NULL!");
+                }
             }
+            else if (!reward.isBuff && reward.weapon != null)
+            {
+                if (gunHandler == null)
+                {
+                    var playerObj = GameObject.FindWithTag("Player");
+                    foreach (Transform child in playerObj.transform)
+                    {
+                        foreach (Transform child2 in child.transform)
+                        {
+                            var gh = child2.GetComponent<GunHandler>();
+                            if (gh != null)
+                            {
+                                gunHandler = gh;
+                                Debug.Log("[RewardSystem] ✓ Found GunHandler on player");
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                gunHandler.SwitchWeapon(reward.weapon);
+                grantedRewards.Add($"{reward.weapon.weaponName}");
+                Debug.Log($"[RewardSystem] ✓ Auto-granted weapon: {reward.weapon.weaponName}");
+            }
+            else
+            {
+                Debug.LogWarning("[RewardSystem] Reward has no buff or weapon!");
+            }
+        }
+        
+        Debug.Log($"[RewardSystem] Total granted rewards: {grantedRewards.Count}");
+        
+        // Show notification and update buff display
+        if (grantedRewards.Count > 0)
+        {
+            ShowNotification(grantedRewards);
+            UpdateBuffDisplay(grantedRewards, buffDetails);
+            Debug.Log("[RewardSystem] ✓ Notification and buff display updated");
         }
         else
         {
-            // Equip weapon
-            if (gunHandler != null)
+            Debug.LogWarning("[RewardSystem] No rewards were successfully granted!");
+        }
+    }
+    
+    /// <summary>
+    /// Get a detailed display name for a buff with its stats
+    /// </summary>
+    private string GetBuffDisplayName(BuffConfig buff)
+    {
+        var baseName = buff.buffName;
+        var detail = "";
+        
+        if (buff.percentageBonus > 0)
+        {
+            detail = $" +{(buff.percentageBonus * 100):F0}%";
+        }
+        else if (buff.flatBonus > 0)
+        {
+            detail = $" +{buff.flatBonus:F0}";
+        }
+        
+        return baseName + detail;
+    }
+    
+    /// <summary>
+    /// Show a non-interactive notification of granted rewards
+    /// </summary>
+    private void ShowNotification(List<string> rewardNames)
+    {
+        if (notificationPanel == null)
+        {
+            Debug.LogWarning("[RewardSystem] Notification panel not found!");
+            return;
+        }
+        
+        // Update notification content
+        var titleLabel = notificationPanel.Q<Label>("notification-title");
+        var rewardList = notificationPanel.Q<VisualElement>("reward-list");
+        
+        if (titleLabel != null)
+        {
+            titleLabel.text = $"WAVE {currentWave} COMPLETE!";
+        }
+        
+        if (rewardList != null)
+        {
+            rewardList.Clear();
+            foreach (var rewardName in rewardNames)
             {
-                gunHandler.SwitchWeapon(choice.weapon);
-                Debug.Log($"[RewardSelection] Equipped weapon: {choice.weapon.weaponName}");
+                var rewardLabel = new Label($"✓ {rewardName}");
+                rewardLabel.AddToClassList("reward-item");
+                rewardLabel.style.fontSize = 18;
+                rewardLabel.style.color = new Color(0.4f, 1f, 0.4f);
+                rewardLabel.style.marginBottom = 5;
+                rewardLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+                rewardList.Add(rewardLabel);
             }
         }
         
-        HideSelection();
+        // Show the notification
+        notificationPanel.style.display = DisplayStyle.Flex;
+        
+        // Auto-hide after duration
+        StartCoroutine(HideNotificationAfterDelay());
     }
     
     /// <summary>
-    /// Skip reward selection
+    /// Hide notification after a delay
     /// </summary>
-    public void SkipSelection()
+    private System.Collections.IEnumerator HideNotificationAfterDelay()
     {
-        Debug.Log("[RewardSelection] Skipped selection");
-        HideSelection();
+        yield return new WaitForSeconds(notificationDuration);
+        
+        if (notificationPanel != null)
+        {
+            notificationPanel.style.display = DisplayStyle.None;
+        }
     }
     
     /// <summary>
-    /// Build the UI programmatically
+    /// Build the notification UI programmatically
     /// </summary>
     private void BuildUI()
     {
@@ -285,243 +294,216 @@ public class RewardSelectionManager : MonoBehaviour
         root.style.flexGrow = 1;
         root.style.width = new Length(100, LengthUnit.Percent);
         root.style.height = new Length(100, LengthUnit.Percent);
-        root.style.justifyContent = Justify.Center;
-        root.style.alignItems = Align.Center;
-        root.style.overflow = Overflow.Hidden;
+        root.style.position = Position.Absolute;
+        root.style.left = 0;
+        root.style.top = 0;
+        root.pickingMode = PickingMode.Ignore; // Don't capture any input!
         
-        // Create darkened background
-        var backdrop = new VisualElement();
-        backdrop.style.position = Position.Absolute;
-        backdrop.style.left = 0;
-        backdrop.style.right = 0;
-        backdrop.style.top = 0;
-        backdrop.style.bottom = 0;
-        backdrop.style.backgroundColor = new Color(0, 0, 0, 0.7f);
-        backdrop.pickingMode = PickingMode.Position; // Capture all mouse events
-        root.Add(backdrop);
+        // Create buff display panel (top-right corner)
+        CreateBuffDisplayPanel();
         
-        // Create selection panel
-        selectionPanel = new VisualElement();
-        selectionPanel.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.95f);
-        selectionPanel.style.borderTopLeftRadius = 20;
-        selectionPanel.style.borderTopRightRadius = 20;
-        selectionPanel.style.borderBottomLeftRadius = 20;
-        selectionPanel.style.borderBottomRightRadius = 20;
-        selectionPanel.style.borderLeftColor = new Color(1f, 0.8f, 0.2f, 0.8f);
-        selectionPanel.style.borderRightColor = new Color(1f, 0.8f, 0.2f, 0.8f);
-        selectionPanel.style.borderTopColor = new Color(1f, 0.8f, 0.2f, 0.8f);
-        selectionPanel.style.borderBottomColor = new Color(1f, 0.8f, 0.2f, 0.8f);
-        selectionPanel.style.borderLeftWidth = 3;
-        selectionPanel.style.borderRightWidth = 3;
-        selectionPanel.style.borderTopWidth = 3;
-        selectionPanel.style.borderBottomWidth = 3;
-        selectionPanel.style.paddingTop = 30;
-        selectionPanel.style.paddingBottom = 30;
-        selectionPanel.style.paddingLeft = 40;
-        selectionPanel.style.paddingRight = 40;
-        selectionPanel.style.alignItems = Align.Center;
-        // Responsive sizing
-        selectionPanel.style.maxWidth = new Length(90, LengthUnit.Percent);
-        selectionPanel.style.maxHeight = new Length(80, LengthUnit.Percent);
-        selectionPanel.style.minWidth = 300;
-        selectionPanel.style.overflow = Overflow.Visible;
-        selectionPanel.pickingMode = PickingMode.Position; // Capture mouse events
-        root.Add(selectionPanel);
+        // Create notification container (for centering)
+        var notificationContainer = new VisualElement();
+        notificationContainer.style.width = new Length(100, LengthUnit.Percent);
+        notificationContainer.style.height = new Length(100, LengthUnit.Percent);
+        notificationContainer.style.position = Position.Absolute;
+        notificationContainer.style.alignItems = Align.Center;
+        notificationContainer.style.justifyContent = Justify.FlexStart;
+        notificationContainer.style.paddingTop = 60; // Position from top
+        notificationContainer.pickingMode = PickingMode.Ignore;
+        root.Add(notificationContainer);
+        
+        // Create notification panel (top-center)
+        notificationPanel = new VisualElement();
+        notificationPanel.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.95f);
+        notificationPanel.style.borderTopLeftRadius = 12;
+        notificationPanel.style.borderTopRightRadius = 12;
+        notificationPanel.style.borderBottomLeftRadius = 12;
+        notificationPanel.style.borderBottomRightRadius = 12;
+        notificationPanel.style.borderLeftColor = new Color(1f, 0.8f, 0.2f, 0.9f);
+        notificationPanel.style.borderRightColor = new Color(1f, 0.8f, 0.2f, 0.9f);
+        notificationPanel.style.borderTopColor = new Color(1f, 0.8f, 0.2f, 0.9f);
+        notificationPanel.style.borderBottomColor = new Color(1f, 0.8f, 0.2f, 0.9f);
+        notificationPanel.style.borderLeftWidth = 3;
+        notificationPanel.style.borderRightWidth = 3;
+        notificationPanel.style.borderTopWidth = 3;
+        notificationPanel.style.borderBottomWidth = 3;
+        notificationPanel.style.paddingTop = 20;
+        notificationPanel.style.paddingBottom = 20;
+        notificationPanel.style.paddingLeft = 30;
+        notificationPanel.style.paddingRight = 30;
+        notificationPanel.style.alignItems = Align.Center;
+        notificationPanel.style.minWidth = 300;
+        notificationPanel.style.maxWidth = 500;
+        notificationPanel.pickingMode = PickingMode.Ignore; // Don't capture any input!
+        notificationContainer.Add(notificationPanel);
         
         // Title
         var title = new Label("WAVE COMPLETE!");
-        title.style.fontSize = 36;
+        title.name = "notification-title";
+        title.style.fontSize = 28;
         title.style.color = new Color(1f, 0.8f, 0.2f);
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
-        title.style.marginBottom = 10;
-        selectionPanel.Add(title);
-        
-        // Wave label
-        waveLabel = new Label("Wave 1");
-        waveLabel.style.fontSize = 24;
-        waveLabel.style.color = Color.white;
-        waveLabel.style.marginBottom = 20;
-        selectionPanel.Add(waveLabel);
+        title.style.marginBottom = 5;
+        title.style.unityTextAlign = TextAnchor.MiddleCenter;
+        notificationPanel.Add(title);
         
         // Subtitle
-        var subtitle = new Label("Choose your reward:");
-        subtitle.style.fontSize = 20;
+        var subtitle = new Label("Rewards Granted:");
+        subtitle.style.fontSize = 16;
         subtitle.style.color = new Color(0.8f, 0.8f, 0.8f);
-        subtitle.style.marginBottom = 30;
-        selectionPanel.Add(subtitle);
+        subtitle.style.marginBottom = 15;
+        subtitle.style.unityTextAlign = TextAnchor.MiddleCenter;
+        notificationPanel.Add(subtitle);
         
-        // Choices container
-        choicesContainer = new VisualElement();
-        choicesContainer.style.flexDirection = FlexDirection.Row;
-        choicesContainer.style.justifyContent = Justify.Center;
-        choicesContainer.style.alignItems = Align.Stretch;
-        choicesContainer.style.flexWrap = Wrap.Wrap; // Wrap on small screens
-        choicesContainer.style.maxWidth = new Length(100, LengthUnit.Percent);
-        selectionPanel.Add(choicesContainer);
-        
-        // Skip button
-        var skipButton = new Button(SkipSelection);
-        skipButton.text = "Skip";
-        skipButton.style.marginTop = 30;
-        skipButton.style.paddingTop = 10;
-        skipButton.style.paddingBottom = 10;
-        skipButton.style.paddingLeft = 30;
-        skipButton.style.paddingRight = 30;
-        skipButton.style.fontSize = 16;
-        skipButton.style.backgroundColor = new Color(0.3f, 0.3f, 0.3f);
-        skipButton.style.color = Color.white;
-        skipButton.style.borderTopLeftRadius = 8;
-        skipButton.style.borderTopRightRadius = 8;
-        skipButton.style.borderBottomLeftRadius = 8;
-        skipButton.style.borderBottomRightRadius = 8;
-        selectionPanel.Add(skipButton);
+        // Reward list container
+        var rewardList = new VisualElement();
+        rewardList.name = "reward-list";
+        rewardList.style.alignItems = Align.FlexStart;
+        rewardList.style.width = new Length(100, LengthUnit.Percent);
+        notificationPanel.Add(rewardList);
         
         // Hide panel initially
-        selectionPanel.style.display = DisplayStyle.None;
+        notificationPanel.style.display = DisplayStyle.None;
         
         // Set as UI Document root
         if (uiDocument != null)
         {
             uiDocument.rootVisualElement.Add(root);
-            
-            // Make UI work with Time.timeScale = 0
-            uiDocument.rootVisualElement.SetEnabled(true);
-            
-            Debug.Log("[RewardSelection] UI built and added to document");
+            Debug.Log("[RewardSystem] Notification UI built successfully");
         }
         else
         {
-            Debug.LogError("[RewardSelection] No UIDocument found!");
+            Debug.LogError("[RewardSystem] No UIDocument found!");
         }
     }
     
     /// <summary>
-    /// Update UI with current choices
+    /// Create the permanent buff display panel
     /// </summary>
-    private void UpdateUI()
+    private void CreateBuffDisplayPanel()
     {
-        if (waveLabel != null)
+        buffDisplayPanel = new VisualElement();
+        buffDisplayPanel.style.position = Position.Absolute;
+        buffDisplayPanel.style.top = 10;
+        buffDisplayPanel.style.right = 10;
+        buffDisplayPanel.style.backgroundColor = new Color(0.1f, 0.1f, 0.15f, 0.85f);
+        buffDisplayPanel.style.borderTopLeftRadius = 8;
+        buffDisplayPanel.style.borderTopRightRadius = 8;
+        buffDisplayPanel.style.borderBottomLeftRadius = 8;
+        buffDisplayPanel.style.borderBottomRightRadius = 8;
+        buffDisplayPanel.style.paddingTop = 12;
+        buffDisplayPanel.style.paddingBottom = 12;
+        buffDisplayPanel.style.paddingLeft = 15;
+        buffDisplayPanel.style.paddingRight = 15;
+        buffDisplayPanel.style.minWidth = 200;
+        buffDisplayPanel.style.maxWidth = 300;
+        buffDisplayPanel.pickingMode = PickingMode.Ignore;
+        root.Add(buffDisplayPanel);
+        
+        // Title
+        var title = new Label("ACTIVE BUFFS");
+        title.style.fontSize = 14;
+        title.style.color = new Color(1f, 0.8f, 0.2f);
+        title.style.unityFontStyleAndWeight = FontStyle.Bold;
+        title.style.marginBottom = 8;
+        title.style.unityTextAlign = TextAnchor.UpperCenter;
+        buffDisplayPanel.Add(title);
+        
+        // Container for active buffs
+        activeBuffsContainer = new VisualElement();
+        activeBuffsContainer.style.alignItems = Align.FlexStart;
+        activeBuffsContainer.style.width = new Length(100, LengthUnit.Percent);
+        buffDisplayPanel.Add(activeBuffsContainer);
+        
+        // Initial empty message
+        var emptyLabel = new Label("No buffs yet");
+        emptyLabel.name = "empty-message";
+        emptyLabel.style.fontSize = 12;
+        emptyLabel.style.color = new Color(0.5f, 0.5f, 0.5f);
+        emptyLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
+        activeBuffsContainer.Add(emptyLabel);
+    }
+    
+    /// <summary>
+    /// Update the buff display with current buffs
+    /// </summary>
+    private void UpdateBuffDisplay(List<string> newBuffNames, List<BuffConfig> buffConfigs = null)
+    {
+        if (activeBuffsContainer == null) return;
+        
+        // Remove empty message if exists
+        var emptyMsg = activeBuffsContainer.Q<Label>("empty-message");
+        if (emptyMsg != null)
         {
-            waveLabel.text = $"Wave {currentWave}";
+            activeBuffsContainer.Remove(emptyMsg);
         }
         
-        if (choicesContainer == null) return;
-        
-        choicesContainer.Clear();
-        
-        for (var i = 0; i < currentChoices.Count; i++)
+        // Add new buff entries with animation
+        for (int i = 0; i < newBuffNames.Count; i++)
         {
-            var choice = currentChoices[i];
-            var choiceCard = CreateChoiceCard(choice, i);
-            choicesContainer.Add(choiceCard);
+            var buffName = newBuffNames[i];
+            var buffConfig = buffConfigs != null && i < buffConfigs.Count ? buffConfigs[i] : null;
+            
+            var buffEntry = new VisualElement();
+            buffEntry.style.flexDirection = FlexDirection.Row;
+            buffEntry.style.alignItems = Align.Center;
+            buffEntry.style.marginBottom = 6;
+            buffEntry.style.paddingTop = 4;
+            buffEntry.style.paddingBottom = 4;
+            buffEntry.style.paddingLeft = 6;
+            buffEntry.style.paddingRight = 6;
+            buffEntry.style.backgroundColor = new Color(0.15f, 0.15f, 0.2f, 0.8f);
+            buffEntry.style.borderTopLeftRadius = 4;
+            buffEntry.style.borderTopRightRadius = 4;
+            buffEntry.style.borderBottomLeftRadius = 4;
+            buffEntry.style.borderBottomRightRadius = 4;
+            buffEntry.style.borderLeftWidth = 2;
+            buffEntry.style.borderLeftColor = new Color(0.4f, 1f, 0.4f);
+            
+            // Buff icon emoji
+            if (buffConfig != null)
+            {
+                var icon = new Label(GetBuffIcon(buffConfig.buffType));
+                icon.style.fontSize = 16;
+                icon.style.marginRight = 6;
+                buffEntry.Add(icon);
+            }
+            
+            // "NEW" indicator
+            var newIndicator = new Label("NEW");
+            newIndicator.style.fontSize = 10;
+            newIndicator.style.color = new Color(1f, 1f, 0.3f);
+            newIndicator.style.unityFontStyleAndWeight = FontStyle.Bold;
+            newIndicator.style.marginRight = 6;
+            newIndicator.style.backgroundColor = new Color(1f, 0.8f, 0f, 0.3f);
+            newIndicator.style.paddingLeft = 4;
+            newIndicator.style.paddingRight = 4;
+            newIndicator.style.paddingTop = 2;
+            newIndicator.style.paddingBottom = 2;
+            newIndicator.style.borderTopLeftRadius = 3;
+            newIndicator.style.borderTopRightRadius = 3;
+            newIndicator.style.borderBottomLeftRadius = 3;
+            newIndicator.style.borderBottomRightRadius = 3;
+            buffEntry.Add(newIndicator);
+            
+            // Buff name
+            var nameLabel = new Label(buffName);
+            nameLabel.style.fontSize = 12;
+            nameLabel.style.color = Color.white;
+            nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            buffEntry.Add(nameLabel);
+            
+            activeBuffsContainer.Add(buffEntry);
+            
+            StartCoroutine(RemoveNewIndicator(newIndicator, buffEntry));
         }
     }
     
     /// <summary>
-    /// Create a visual card for a reward choice
+    /// Get emoji icon for buff type
     /// </summary>
-    private VisualElement CreateChoiceCard(RewardChoice choice, int index)
-    {
-        var card = new VisualElement();
-        card.style.backgroundColor = new Color(0.15f, 0.15f, 0.2f);
-        card.style.borderTopLeftRadius = 15;
-        card.style.borderTopRightRadius = 15;
-        card.style.borderBottomLeftRadius = 15;
-        card.style.borderBottomRightRadius = 15;
-        card.style.paddingTop = 20;
-        card.style.paddingBottom = 20;
-        card.style.paddingLeft = 20;
-        card.style.paddingRight = 20;
-        card.style.marginLeft = 10;
-        card.style.marginRight = 10;
-        card.style.marginTop = 10;
-        card.style.marginBottom = 10;
-        // Responsive width - flex to fill but with constraints
-        card.style.minWidth = 150;
-        card.style.maxWidth = 220;
-        card.style.flexGrow = 1;
-        card.style.flexShrink = 1;
-        card.style.alignItems = Align.Center;
-        card.style.borderTopWidth = 3;
-        card.style.borderTopColor = choice.GetColor();
-        
-        // Type label
-        var typeLabel = new Label(choice.isBuff ? "BUFF" : "WEAPON");
-        typeLabel.style.fontSize = 12;
-        typeLabel.style.color = choice.GetColor();
-        typeLabel.style.marginBottom = 10;
-        card.Add(typeLabel);
-        
-        // Rarity label (for buffs)
-        if (choice.isBuff)
-        {
-            var rarityLabel = new Label(choice.buff.rarity.ToString().ToUpper());
-            rarityLabel.style.fontSize = 10;
-            rarityLabel.style.color = choice.GetColor();
-            rarityLabel.style.marginBottom = 5;
-            card.Add(rarityLabel);
-        }
-        
-        // Icon placeholder
-        var iconContainer = new VisualElement();
-        iconContainer.style.width = 60;
-        iconContainer.style.height = 60;
-        iconContainer.style.backgroundColor = new Color(0.2f, 0.2f, 0.25f);
-        iconContainer.style.borderTopLeftRadius = 10;
-        iconContainer.style.borderTopRightRadius = 10;
-        iconContainer.style.borderBottomLeftRadius = 10;
-        iconContainer.style.borderBottomRightRadius = 10;
-        iconContainer.style.marginBottom = 15;
-        iconContainer.style.justifyContent = Justify.Center;
-        iconContainer.style.alignItems = Align.Center;
-        
-        // Icon symbol
-        var iconSymbol = new Label(choice.isBuff ? GetBuffSymbol(choice.buff.buffType) : "🔫");
-        iconSymbol.style.fontSize = 30;
-        iconContainer.Add(iconSymbol);
-        
-        card.Add(iconContainer);
-        
-        // Name
-        var nameLabel = new Label(choice.GetName());
-        nameLabel.style.fontSize = 16;
-        nameLabel.style.color = Color.white;
-        nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-        nameLabel.style.marginBottom = 10;
-        nameLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        nameLabel.style.whiteSpace = WhiteSpace.Normal;
-        card.Add(nameLabel);
-        
-        // Description
-        var descLabel = new Label(choice.GetDescription());
-        descLabel.style.fontSize = 12;
-        descLabel.style.color = new Color(0.7f, 0.7f, 0.7f);
-        descLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        descLabel.style.whiteSpace = WhiteSpace.Normal;
-        descLabel.style.marginBottom = 15;
-        card.Add(descLabel);
-        
-        // Select button
-        var capturedIndex = index;
-        var selectButton = new Button(() => SelectReward(capturedIndex));
-        selectButton.text = "SELECT";
-        selectButton.style.paddingTop = 8;
-        selectButton.style.paddingBottom = 8;
-        selectButton.style.paddingLeft = 20;
-        selectButton.style.paddingRight = 20;
-        selectButton.style.fontSize = 14;
-        selectButton.style.backgroundColor = choice.GetColor();
-        selectButton.style.color = Color.white;
-        selectButton.style.borderTopLeftRadius = 8;
-        selectButton.style.borderTopRightRadius = 8;
-        selectButton.style.borderBottomLeftRadius = 8;
-        selectButton.style.borderBottomRightRadius = 8;
-        card.Add(selectButton);
-        
-        return card;
-    }
-    
-    private string GetBuffSymbol(BuffType type)
+    private string GetBuffIcon(BuffType type)
     {
         return type switch
         {
@@ -541,32 +523,41 @@ public class RewardSelectionManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Remove the "NEW" indicator after a delay
+    /// </summary>
+    private System.Collections.IEnumerator RemoveNewIndicator(VisualElement indicator, VisualElement parent)
+    {
+        yield return new WaitForSeconds(3f);
+        
+        if (indicator != null && parent != null)
+        {
+            parent.Remove(indicator);
+            // Update left border to normal color
+            parent.style.borderLeftColor = new Color(0.3f, 0.3f, 0.4f);
+        }
+    }
+    
+    /// <summary>
     /// Create default reward pool with built-in buffs
     /// </summary>
     private void CreateDefaultRewardPool()
     {
         rewardPool = ScriptableObject.CreateInstance<RewardPool>();
-        
-        // Add default buffs programmatically
         rewardPool.availableBuffs = new List<BuffConfig>();
-        
-        // We'll create runtime buffs since we can't save ScriptableObjects at runtime
-        // These will work for testing but for production, create actual assets
-        
-        Debug.Log("[RewardSelection] Created default reward pool");
+        Debug.Log("[RewardSystem] Created default reward pool");
     }
     
     /// <summary>
-    /// Generate fallback choices if no reward pool
+    /// Generate fallback rewards if no reward pool
     /// </summary>
-    private List<RewardChoice> GenerateFallbackChoices()
+    private List<RewardChoice> GenerateFallbackRewards()
     {
         var choices = new List<RewardChoice>();
         
-        // Create runtime buffs
+        // Create runtime buffs for fallback
         var damageBuff = ScriptableObject.CreateInstance<BuffConfig>();
         damageBuff.buffName = "Damage Up";
-        damageBuff.description = "+{percent}% damage";
+        damageBuff.description = "+15% damage";
         damageBuff.buffType = BuffType.DamageBoost;
         damageBuff.percentageBonus = 0.15f;
         damageBuff.rarity = BuffRarity.Common;
@@ -574,20 +565,21 @@ public class RewardSelectionManager : MonoBehaviour
         
         var speedBuff = ScriptableObject.CreateInstance<BuffConfig>();
         speedBuff.buffName = "Speed Boost";
-        speedBuff.description = "+{percent}% movement speed";
+        speedBuff.description = "+10% movement speed";
         speedBuff.buffType = BuffType.SpeedBoost;
-        speedBuff.percentageBonus = 0.1f;
+        speedBuff.percentageBonus = 0.10f;
         speedBuff.rarity = BuffRarity.Common;
         choices.Add(new RewardChoice(speedBuff));
         
-        var healthBuff = ScriptableObject.CreateInstance<BuffConfig>();
-        healthBuff.buffName = "Heal";
-        healthBuff.description = "Restore {flat} health";
-        healthBuff.buffType = BuffType.HealthBoost;
-        healthBuff.flatBonus = 25f;
-        healthBuff.rarity = BuffRarity.Uncommon;
-        choices.Add(new RewardChoice(healthBuff));
+        var fireRateBuff = ScriptableObject.CreateInstance<BuffConfig>();
+        fireRateBuff.buffName = "Fire Rate Boost";
+        fireRateBuff.description = "+20% fire rate";
+        fireRateBuff.buffType = BuffType.FireRateBoost;
+        fireRateBuff.percentageBonus = 0.20f;
+        fireRateBuff.rarity = BuffRarity.Uncommon;
+        choices.Add(new RewardChoice(fireRateBuff));
         
+        Debug.Log($"[RewardSystem] Using fallback rewards with {choices.Count} buffs");
         return choices;
     }
 }

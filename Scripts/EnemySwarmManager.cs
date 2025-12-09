@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -60,6 +61,8 @@ public class EnemySwarmManager : MonoBehaviour
         
         if (waveInProgress && enemiesAlive == 0 && totalEnemiesSpawned > 0)
         {
+            if (showDebugInfo)
+                Debug.Log($"[EnemySwarmManager] Wave {currentWaveIndex + 1}: All {totalEnemiesSpawned} enemies defeated!");
             CompleteWave();
         }
     }
@@ -246,6 +249,7 @@ public class EnemySwarmManager : MonoBehaviour
     private void CompleteWave()
     {
         waveInProgress = false;
+        Debug.Log($"[EnemySwarmManager] Invoking OnWaveComplete event for wave index {currentWaveIndex}");
         OnWaveComplete?.Invoke(currentWaveIndex);
         
         if (showDebugInfo)
@@ -382,10 +386,9 @@ public class EnemySwarmManager : MonoBehaviour
     public void ResetWaves()
     {
         StopAllCoroutines();
-        foreach (var enemy in spawnedEnemies)
+        foreach (var enemy in spawnedEnemies.Where(enemy => enemy != null))
         {
-            if (enemy != null)
-                Destroy(enemy);
+            Destroy(enemy);
         }
         spawnedEnemies.Clear();
         currentWaveIndex = 0;

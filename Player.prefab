@@ -77,7 +77,7 @@ GameObject:
   - component: {fileID: 7212681385088426823}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -218,6 +218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   speed: 6
   cameraController: {fileID: 7312050471465029349}
+  speedMultiplier: 1
 --- !u!114 &7312050471465029349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -245,6 +246,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
   health: 100
+  maxHealth: 100
+  initialInvincibilitySeconds: 1
   weaponHolder: {fileID: 8461699862746584799}
   startingWeapon: {fileID: 4419689991502975317, guid: 331eafb3e2f6c439faf1555a7390e04e, type: 3}
-  healthTextObject: {fileID: 0}
