@@ -1,7 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/Scenes/PlayerHud.uss?fileID=7433441132597879392&amp;guid=ddce8e8fd13644bf89b82b2fddd699c8&amp;type=3#PlayerHud" />
     <ui:VisualElement name="hud-container" class="hud-container">
-        <ui:VisualElement name="health-section" class="health-section" style="display: flex; visibility: visible;">
+        <ui:VisualElement name="health-section" class="health-section" style="display: flex; visibility: visible; -unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future%20Narrow.ttf?fileID=12800000&amp;guid=c9d8013f7c69642b3b5346ac686690b6&amp;type=3#Kenney Future Narrow&quot;);">
             <ui:Label name="health-label" class="health-label" />
             <ui:VisualElement name="health-bar-container" class="health-bar-container" style="visibility: visible;">
                 <ui:VisualElement name="health-bar-fill" class="health-bar-fill" style="width: 100%;" />
@@ -24,7 +24,7 @@
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="dash-container" class="dash-container">
-        <ui:Label name="dash-label" text="DASH" class="dash-label" />
+        <ui:Label name="dash-label" text="DASH" class="dash-label" style="-unity-font-definition: url(&quot;project://database/Assets/UI%20Pack/Font/Kenney%20Future.ttf?fileID=12800000&amp;guid=f19ee655bfc4e421882bf114b5042c91&amp;type=3#Kenney Future&quot;);" />
         <ui:VisualElement name="dash-cooldown-bar-container" class="dash-cooldown-bar-container">
             <ui:VisualElement name="dash-cooldown-bar" class="dash-cooldown-bar" />
         </ui:VisualElement>

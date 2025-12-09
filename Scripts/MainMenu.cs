@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
     public class MainMenu : MonoBehaviour
     {
@@ -28,5 +29,7 @@ using UnityEngine.UIElements;
         {
             Time.timeScale = 1;
             Root.style.display = DisplayStyle.None;
+            // Go directly into game
+            SceneManager.LoadScene("Test");
         }
     }
