@@ -14,9 +14,9 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public float speedMultiplier = 1f;
     
     [Header("Dash")]
-    public float dashSpeed = 20f;
+    public float dashSpeed = 10f;
     public float dashDuration = 0.1f;
-    public float dashCooldown = 1f;
+    public float dashCooldown = 4f;
     private float _dashCooldownTimer = 0f;
     private bool _isDashing = false;
     
