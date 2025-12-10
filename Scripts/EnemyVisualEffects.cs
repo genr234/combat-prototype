@@ -93,20 +93,41 @@ public class EnemyVisualEffects : MonoBehaviour
     {
         if (!isSpawning)
         {
-            if (flashOnDamage)
+            try
             {
-                StopCoroutine("DamageFlash");
-                StartCoroutine(DamageFlash());
+                if (flashOnDamage)
+                {
+                    StopCoroutine("DamageFlash");
+                    StartCoroutine(DamageFlash());
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[EnemyVisualEffects] Error in DamageFlash: {ex.Message}");
             }
             
-            if (shakeOnDamage && !isShaking)
+            try
             {
-                if (shakeCoroutine != null)
-                    StopCoroutine(shakeCoroutine);
-                shakeCoroutine = StartCoroutine(DamageShake());
+                if (shakeOnDamage && !isShaking)
+                {
+                    if (shakeCoroutine != null)
+                        StopCoroutine(shakeCoroutine);
+                    shakeCoroutine = StartCoroutine(DamageShake());
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[EnemyVisualEffects] Error in DamageShake: {ex.Message}");
             }
             
-            SpawnHitParticles();
+            try
+            {
+                SpawnHitParticles();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[EnemyVisualEffects] Error in SpawnHitParticles: {ex.Message}");
+            }
         }
     }
     
@@ -163,34 +184,49 @@ public class EnemyVisualEffects : MonoBehaviour
     
     private void CreateProceduralHitParticles()
     {
-        var particleObj = new GameObject("HitParticles");
-        particleObj.transform.position = transform.position + Vector3.up * 0.5f;
-        
-        var ps = particleObj.AddComponent<ParticleSystem>();
-        var main = ps.main;
-        main.startLifetime = 0.4f;
-        main.startSpeed = 3f;
-        main.startSize = 0.15f;
-        main.startColor = hitParticleColor;
-        main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.gravityModifier = 1f;
-        
-        var emission = ps.emission;
-        emission.rateOverTime = 0;
-        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, (short)hitParticleCount) });
-        
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.2f;
-        
-        var sizeOverLifetime = ps.sizeOverLifetime;
-        sizeOverLifetime.enabled = true;
-        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0, 1, 1, 0));
-        
-        var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
-        
-        Destroy(particleObj, 0.5f);
+        try
+        {
+            var particleObj = new GameObject("HitParticles");
+            particleObj.transform.position = transform.position + Vector3.up * 0.5f;
+            
+            var ps = particleObj.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.startLifetime = 0.4f;
+            main.startSpeed = 3f;
+            main.startSize = 0.15f;
+            main.startColor = hitParticleColor;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.gravityModifier = 1f;
+            
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, (short)hitParticleCount) });
+            
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.2f;
+            
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0, 1, 1, 0));
+            
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            var shader = Shader.Find("Particles/Standard Unlit");
+            if (shader != null)
+            {
+                renderer.material = new Material(shader);
+            }
+            else
+            {
+                Debug.LogWarning("[EnemyVisualEffects] Particles/Standard Unlit shader not found, using default material");
+            }
+            
+            Destroy(particleObj, 0.5f);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[EnemyVisualEffects] Error creating procedural hit particles: {ex.Message}");
+        }
     }
     
     private IEnumerator DamageShake()
@@ -221,18 +257,50 @@ public class EnemyVisualEffects : MonoBehaviour
     
     private System.Collections.IEnumerator DamageFlash()
     {
-        foreach (var renderer in renderers)
+        try
         {
-            if (renderer != null && renderer.material != null)
-                renderer.material.color = damageFlashColor;
+            foreach (var renderer in renderers)
+            {
+                if (renderer != null && renderer.material != null)
+                {
+                    try
+                    {
+                        renderer.material.color = damageFlashColor;
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogWarning($"[EnemyVisualEffects] Error setting damage flash color: {ex.Message}");
+                    }
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[EnemyVisualEffects] Error in DamageFlash loop: {ex.Message}");
         }
         
         yield return new WaitForSeconds(flashDuration);
         
-        for (var i = 0; i < renderers.Length; i++)
+        try
         {
-            if (renderers[i] != null && renderers[i].material != null)
-                renderers[i].material.color = originalColors[i];
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null && renderers[i].material != null)
+                {
+                    try
+                    {
+                        renderers[i].material.color = originalColors[i];
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogWarning($"[EnemyVisualEffects] Error restoring material color: {ex.Message}");
+                    }
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[EnemyVisualEffects] Error in DamageFlash restore: {ex.Message}");
         }
     }
     
